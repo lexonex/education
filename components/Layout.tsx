@@ -315,7 +315,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const tools = [
     ...(isMoneyManagementAuthorized ? [{ 
       to: '/money-management', 
-      label: 'MONEY_MGMT_V4.0', 
+      label: 'MONEY_MANAGEMENT_V4.0', 
       icon: <DollarSign />
     }] : [])
   ];
