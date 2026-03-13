@@ -83,11 +83,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, isActive, is
       href={`#${to}`}
       onClick={handleClick}
       title={isCollapsed ? label : ""}
-      className={`relative flex items-center transition-all duration-300 group mb-1 h-12 overflow-hidden border-b border-white/[0.02] ${
+      className={`relative flex items-center transition-all duration-300 group mb-1 h-12 border-b border-white/[0.02] ${
+        isCollapsed ? 'overflow-hidden' : ''
+      } ${
         isActive 
           ? 'text-accent' 
           : 'text-muted/40 hover:text-white'
-      } ${isCollapsed ? 'lg:justify-center lg:px-0 px-6' : 'px-6'}`}
+      } ${isCollapsed ? 'justify-center px-0' : 'px-6 min-w-max'}`}
     >
       {/* Active Line Indicator */}
       {isActive && (
@@ -106,9 +108,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, isActive, is
         {React.cloneElement(icon as React.ReactElement<any>, { size: 18 })}
       </span>
 
-      <div className={`relative z-10 overflow-hidden transition-all duration-300 ease-in-out ${isCollapsed ? 'lg:w-0 lg:opacity-0 lg:ml-0 flex-1 opacity-100 ml-4' : 'flex-1 opacity-100 ml-4'}`}>
+      <div className={`relative z-10 overflow-hidden transition-all duration-300 ease-in-out ${isCollapsed ? 'w-0 opacity-0 ml-0' : 'flex-1 opacity-100 ml-4'}`}>
         <span className="font-heading text-[10px] tracking-[0.3em] uppercase font-black whitespace-nowrap block">
-          {label}
+          {label.replace(/\s+/g, '_')}
         </span>
       </div>
     </a>
@@ -273,9 +275,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { to: '/users', label: 'USERS', icon: <Users /> },
     { to: '/categories', label: 'PERMISSIONS', icon: <FolderTree /> },
     { to: '/documents', label: 'DOCUMENTS', icon: <FileText /> },
-    { to: '/resource-links', label: 'ACC_REGISTRATION', icon: <Globe /> },
-    { to: '/subscription-plans', label: 'SUB_PLAN', icon: <Zap /> },
-    { to: '/subscriptions', label: 'SUB_MANAGEMENT', icon: <TrendingUp /> },
+    { to: '/resource-links', label: 'ACCOUNT_REGISTRATION', icon: <Globe /> },
+    { to: '/subscription-plans', label: 'SUBSCRIPTION_PLANS', icon: <Zap /> },
+    { to: '/subscriptions', label: 'SUBSCRIPTION_MANAGEMENT', icon: <TrendingUp /> },
     { to: '/registration', label: 'REGISTRATION', icon: <Key /> },
     { to: '/logs', label: 'LOGS', icon: <History /> },
     { to: '/settings', label: 'SETTINGS', icon: <Settings /> },
@@ -314,7 +316,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const tools = [
     ...(isMoneyManagementAuthorized ? [{ 
       to: '/money-management', 
-      label: 'MONEY_MGMT', 
+      label: 'MONEY_MANAGEMENT', 
       icon: <DollarSign />
     }] : [])
   ];
@@ -330,7 +332,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <aside 
         className={`fixed inset-y-0 left-0 z-50 bg-[#0A0A0A] border-r border-white/5 transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } ${isCollapsed ? 'lg:w-20 w-[300px]' : 'w-[300px] lg:w-96'}`}
+        } ${isCollapsed ? 'w-20' : 'w-fit min-w-[300px] max-w-[90vw] lg:max-w-[500px]'}`}
       >
         {/* FLOATING TOGGLE BUTTON */}
         <button 
@@ -340,11 +342,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
 
-        <div className="h-full flex flex-col relative overflow-hidden">
+        <div className={`h-full flex flex-col relative ${isCollapsed ? 'overflow-hidden' : ''}`}>
           
           {/* TOP HEADER: BRANDING - FIXING PERFECT CENTERING */}
-          <div className={`h-20 flex items-center border-b border-white/5 shrink-0 transition-all duration-300 ${isCollapsed ? 'lg:justify-center lg:px-0 px-6' : 'px-6'}`}>
-            <Link to="/" className={`flex items-center transition-all duration-300 ${isCollapsed ? 'lg:justify-center lg:gap-0 gap-4' : 'gap-4'}`}>
+          <div className={`h-20 flex items-center border-b border-white/5 shrink-0 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-6'}`}>
+            <Link to="/" className={`flex items-center transition-all duration-300 ${isCollapsed ? 'justify-center gap-0' : 'gap-4'}`}>
               <div className="p-2.5 bg-[#0A0A0A] border border-accent/20 shrink-0 flex items-center justify-center w-10 h-10 overflow-hidden">
                 {faviconURL ? (
                   <img src={faviconURL || undefined} alt="Logo" className="w-full h-full object-contain" />
@@ -352,7 +354,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <div className="w-full h-full" />
                 )}
               </div>
-              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'lg:w-0 lg:opacity-0 lg:h-0 w-auto opacity-100' : 'w-auto opacity-100'}`}>
+              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 h-0' : 'w-auto opacity-100'}`}>
                 <h1 className="font-heading font-black text-lg uppercase text-white tracking-tighter truncate leading-none">
                   {brandingName}
                 </h1>
@@ -474,14 +476,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               onClick={logout} 
               className={`flex items-center transition-all duration-300 group hover:bg-error/5 hover:text-error ${
                 isCollapsed 
-                  ? 'lg:h-12 lg:w-full lg:justify-center h-12 w-full px-6' 
-                  : 'h-12 w-full px-6'
+                  ? 'h-12 w-full justify-center px-0' 
+                  : 'h-12 w-full px-6 min-w-max'
               }`}
             >
-              <div className={`shrink-0 flex items-center justify-center transition-all duration-300 ${isCollapsed ? 'lg:w-full' : ''}`}>
+              <div className={`shrink-0 flex items-center justify-center transition-all duration-300 ${isCollapsed ? 'w-full' : ''}`}>
                  <LogOut size={16} className={`transition-transform duration-300 group-hover:scale-110 ${isCollapsed ? 'lg:text-white' : 'text-muted/40'}`} />
               </div>
-              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'lg:w-0 lg:opacity-0 lg:h-0 opacity-100 ml-4 flex-1 text-left' : 'opacity-100 ml-4 flex-1 text-left'}`}>
+              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 h-0' : 'opacity-100 ml-4 flex-1 text-left'}`}>
                 <span className="font-heading text-[9px] uppercase tracking-[0.4em] font-black whitespace-nowrap text-muted/40 group-hover:text-error">LOGOUT</span>
               </div>
             </button>
