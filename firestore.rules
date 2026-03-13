@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- BASIC HELPERS ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function hasMapping() {
+      return exists(/databases/$(database)/documents/admin/root/user_mappings/$(request.auth.uid));
+    }
+
+    function getMapping() {
+      return get(/databases/$(database)/documents/admin/root/user_mappings/$(request.auth.uid)).data;
+    }
+
+    // --- RULES ---
+    
+    match /admin/root {
+      match /system_config/{configId} {
+        allow read: if true;
+        allow write: if isSignedIn() && hasMapping() && getMapping().role == 'ADMIN';
+      }
+
+      match /user_mappings/{uid} {
+        allow read: if isSignedIn();
+        allow write: if isSelf(uid) || (isSignedIn() && hasMapping() && getMapping().role == 'ADMIN');
+      }
+
+      match /registration_keys/{key} {
+        allow read: if true; 
+        allow update: if true; // Allow updates for registration process
+        allow create, delete: if isSignedIn() && hasMapping() && getMapping().role == 'ADMIN';
+      }
+
+      match /admins/{adminId} {
+        allow read: if isSignedIn();
+        allow write: if isSelf(adminId);
+        
+        match /students/{studentId} {
+          allow read: if isSelf(adminId) || isSelf(studentId);
+          allow write: if isSelf(adminId) || isSelf(studentId);
+        }
+        
+        match /categories/{catId} {
+          allow read: if isSignedIn();
+          allow write: if isSelf(adminId);
+        }
+        
+        match /documents/{docId} {
+          allow read: if isSignedIn();
+          allow create, delete: if isSelf(adminId);
+          allow update: if isSignedIn() && (
+          isSelf(adminId) || 
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount']))
+        );
+        }
+        
+        match /my_keys/{keyId} {
+          allow read, write: if isSelf(adminId);
+        }
+
+        match /logs/{logId} {
+          allow read: if isSelf(adminId);
+          allow create: if isSignedIn();
+          allow delete: if isSelf(adminId);
+        }
+      }
+
+      match /subscription_codes/{code} {
+        allow read: if isSignedIn();
+        allow create, delete: if isSignedIn() && hasMapping() && getMapping().role == 'ADMIN';
+        allow update: if isSignedIn();
+      }
+
+      match /money_management_sessions/{sessionId} {
+        allow read, update, delete: if isSignedIn() && (
+          (resource.data.userId == request.auth.uid) || 
+          (hasMapping() && getMapping().role == 'ADMIN')
+        );
+        allow create: if isSignedIn();
+      }
+
+      match /money_management_settings/{settingId} {
+        allow read, update: if isSignedIn() && (
+          (resource.data.userId == request.auth.uid) || 
+          (hasMapping() && getMapping().role == 'ADMIN')
+        );
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      }
+
+      match /trading_platforms/{platformId} {
+        allow read: if true;
+        allow update: if true; 
+        allow create, delete: if isSignedIn() && (hasMapping() && getMapping().role == 'ADMIN');
+      }
+
+      match /subscription_plans/{planId} {
+        allow read: if true;
+        allow write: if isSignedIn() && (hasMapping() && getMapping().role == 'ADMIN');
+      }
+    }
+  }
+}

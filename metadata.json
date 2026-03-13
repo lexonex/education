@@ -1,0 +1,5 @@
+{
+  "name": "edu.lexonex.com",
+  "description": "A high-performance, multi-tenant education management system featuring isolated data architecture, role-based access control, and advanced knowledge management tools.",
+  "requestFramePermissions": []
+}

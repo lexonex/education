@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /logs/
+
+Sitemap: https://lexonex.run.app/sitemap.xml

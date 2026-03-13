@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LEXONEX">
+    <meta name="theme-color" content="#050505">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E">
+    <title></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/index.css">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+      body {
+        background-color: #050505;
+        color: #FFFFFF;
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        touch-action: manipulation;
+      }
+      html {
+        height: 100%;
+      }
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #050505;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1F1F1F;
+        border: 1px solid #333;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #00F0FF;
+      }
+      .square-button {
+        clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0% 30%);
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(5, 5, 5, 0.2);
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #1F1F1F;
+        border: 1px solid #333;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #00F0FF;
+      }
+
+      @media (max-width: 640px) {
+        .custom-scrollbar::-webkit-scrollbar { 
+          width: 4px; 
+        } 
+        .custom-scrollbar::-webkit-scrollbar-track { 
+          background: transparent; 
+        } 
+        .custom-scrollbar::-webkit-scrollbar-thumb { 
+          background: rgba(0, 240, 255, 0.1); 
+        } 
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { 
+          background: rgba(0, 240, 255, 0.3); 
+        }
+      }
+      .grayscale-image {
+        filter: grayscale(100%);
+        transition: filter 0.3s ease;
+      }
+      .grayscale-image:hover {
+        filter: grayscale(0%);
+      }
+      /* Prose Overrides for futuristic feel */
+      .prose h1, .prose h2, .prose h3, .prose h4 {
+        font-family: 'Orbitron', sans-serif !important;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+      }
+      /* Significantly reduced header sizes for compact display */
+      .prose h1 { font-size: 1.4em !important; margin-top: 1.2em !important; margin-bottom: 0.4em !important; }
+      .prose h2 { font-size: 1.2em !important; margin-top: 1.1em !important; margin-bottom: 0.3em !important; }
+      .prose h3 { font-size: 1.1em !important; margin-top: 1.0em !important; margin-bottom: 0.2em !important; }
+      .prose h4 { font-size: 1.0em !important; margin-top: 0.9em !important; margin-bottom: 0.2em !important; }
+      
+      .prose strong {
+        color: #00F0FF !important;
+      }
+      .prose pre {
+        background-color: #050505 !important;
+        border: 1px solid #1F1F1F;
+        border-radius: 0 !important;
+      }
+      .prose code {
+        color: #00F0FF !important;
+      }
+      /* Hide number input spinners */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type=number] {
+        -moz-appearance: textfield;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      // Force unregister existing service workers to fix caching issues
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('Service Worker unregistered');
+          }
+        });
+      }
+
+      // Handle Vite chunk load errors (happens after new deployments)
+      window.addEventListener('error', (e) => {
+        if (e.message && (e.message.includes('chunk') || e.message.includes('Loading chunk') || e.message.includes('Loading CSS chunk'))) {
+          console.log('Chunk load error detected, reloading...');
+          window.location.reload();
+        }
+      }, true);
+
+      // Handle dynamic import errors
+      window.addEventListener('unhandledrejection', (e) => {
+        if (e.reason && e.reason.name === 'ChunkLoadError') {
+          console.log('Dynamic chunk load error detected, reloading...');
+          window.location.reload();
+        }
+      });
+
+      // Forcefully disable pinch-to-zoom and gesture-based scaling
+      document.addEventListener('touchstart', function (event) {
+        if (event.touches.length > 1) {
+          event.preventDefault();
+        }
+      }, { passive: false });
+
+      document.addEventListener('gesturestart', function (event) {
+        event.preventDefault();
+      }, { passive: false });
+    </script>
+  </body>
+</html>
