@@ -214,7 +214,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { fetchActiveData: fetchMoneyData } = useMoneyManagementStore();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 1536);
   const [dataHydrated, setDataHydrated] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
