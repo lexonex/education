@@ -388,17 +388,16 @@ const DocumentEditor: React.FC = () => {
                 className="bg-black/60 border border-white/10 relative overflow-hidden shadow-2xl"
                 style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)' }}
               >
-                <div className="bg-zinc-950 p-5 lg:p-14 flex flex-col space-y-6 lg:space-y-12 relative z-10">
+                <div className="bg-zinc-950 p-5 lg:pt-10 lg:px-14 lg:pb-14 flex flex-col space-y-4 lg:space-y-8 relative z-10">
                    {/* HEADER SECTOR */}
-                   <div className="flex items-center justify-between border-b border-white/5 pb-6 lg:pb-10 relative">
-                      <div className="flex items-center gap-4 lg:gap-8 mt-2">
-                        <div className="p-2 sm:p-3 bg-accent/5 border border-accent/20 text-accent lg:scale-125"><FileText size={20}/></div>
-                        <div className="min-w-0">
+                   <div className="flex items-start sm:items-center justify-between border-b border-white/5 pb-4 lg:pb-6 relative">
+                      <div className="flex items-start sm:items-center gap-4 lg:gap-8 mt-2">
+                      <div className="min-w-0">
                            <div className="flex items-center gap-2 sm:gap-3">
                              <div className="w-1.5 h-1.5 bg-accent animate-pulse shrink-0"></div>
                              <span className="text-[8px] sm:text-[9px] lg:text-[11px] font-heading text-accent tracking-[0.4em] sm:tracking-[0.5em] uppercase font-black truncate">{getActiveCategoryName()}</span>
                            </div>
-                           <h2 className="text-lg lg:text-3xl font-heading font-black tracking-tighter text-white uppercase mt-1 truncate">{title || 'UNTITLED'}</h2>
+                           <h2 className="text-lg lg:text-3xl font-heading font-black tracking-tighter text-white uppercase mt-1 break-words">{title || 'UNTITLED'}</h2>
                         </div>
                       </div>
                    </div>
@@ -451,12 +450,8 @@ const DocumentEditor: React.FC = () => {
                    )}
 
                    {/* TEXT CONTENT */}
-                   <div className="prose prose-invert max-w-none font-body text-zinc-400 leading-relaxed border-t border-white/5 pt-6 lg:pt-12">
-                     <div className="flex items-center gap-3 mb-4 lg:mb-8">
-                        <Terminal size={14} className="text-accent shrink-0 lg:size-[18px]" />
-                        <h4 className="text-[8px] lg:text-[12px] font-heading text-white uppercase tracking-[0.4em] lg:tracking-[0.6em] font-black">CONTENT</h4>
-                     </div>
-                     <div className="bg-white/[0.01] p-4 lg:p-12 border border-white/5 shadow-inner text-[10.5px] sm:text-[11.5px] lg:text-[16px] markdown-body">
+                   <div className="prose prose-invert max-w-none font-body text-zinc-400 leading-relaxed">
+                     <div className="bg-white/[0.01] p-4 lg:pt-8 lg:px-12 lg:pb-12 border border-white/5 shadow-inner text-[10.5px] sm:text-[11.5px] lg:text-[16px] markdown-body">
                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || "--- EMPTY ---"}</ReactMarkdown>
                      </div>
                    </div>
