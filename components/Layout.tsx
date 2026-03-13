@@ -106,8 +106,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, isActive, is
         {React.cloneElement(icon as React.ReactElement<any>, { size: 18 })}
       </span>
 
-      {/* Label */}
-      <div className={`relative z-10 overflow-hidden transition-all duration-300 ease-in-out ${isCollapsed ? 'w-0 opacity-0 ml-0' : 'w-48 opacity-100 ml-4'}`}>
+      <div className={`relative z-10 overflow-hidden transition-all duration-300 ease-in-out ${isCollapsed ? 'w-0 opacity-0 ml-0' : 'w-72 opacity-100 ml-4'}`}>
         <span className="font-heading text-[10px] tracking-[0.3em] uppercase font-black whitespace-nowrap block">
           {label}
         </span>
@@ -215,7 +214,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { fetchActiveData: fetchMoneyData } = useMoneyManagementStore();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [dataHydrated, setDataHydrated] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -315,7 +314,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const tools = [
     ...(isMoneyManagementAuthorized ? [{ 
       to: '/money-management', 
-      label: 'MONEY_MANAGEMENT_V4.0', 
+      label: 'MONEY_MGMT', 
       icon: <DollarSign />
     }] : [])
   ];
@@ -331,7 +330,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <aside 
         className={`fixed inset-y-0 left-0 z-50 bg-[#0A0A0A] border-r border-white/5 transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } ${isCollapsed ? 'w-20' : 'w-72'}`}
+        } ${isCollapsed ? 'w-20' : 'w-96'}`}
       >
         {/* FLOATING TOGGLE BUTTON */}
         <button 
