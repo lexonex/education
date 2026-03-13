@@ -24,7 +24,8 @@ import {
   AlertCircle,
   GripVertical,
   GripHorizontal,
-  ArrowRight
+  ArrowRight,
+  Star
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import {
@@ -86,18 +87,22 @@ const SortablePlatformItem = ({
         <GripHorizontal size={14} />
       </div>
 
-      <div className="relative bg-surface group transition-all duration-500 flex flex-col h-full overflow-hidden" 
+      <div className={`relative bg-[#050505] group transition-all duration-500 flex flex-col flex-1 overflow-hidden border-[0.5px] ${p.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-white/30'}`} 
            style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
          
-         {/* Straight Edge Borders - Positioned to stop before the diagonal cuts */}
-         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
-         <div className="absolute top-0 right-0 bottom-[20px] w-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
-         <div className="absolute bottom-0 right-[20px] left-0 h-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
-         <div className="absolute bottom-0 left-0 top-0 w-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
+         {p.isPopular && (
+           <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em] z-30 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 10% 100%)' }}>POPULAR</div>
+         )}
+
+
 
          <div className="p-5 sm:p-8 relative z-10 flex flex-col h-full">
             {/* Index Number */}
-            <div className="absolute top-4 right-4 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black text-white/[0.02] group-hover:text-accent/[0.05] transition-colors leading-none select-none">
+            <div className={`absolute top-4 right-4 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black transition-colors leading-none select-none ${
+              p.isPopular 
+                ? 'text-yellow-500/[0.02] group-hover:text-yellow-500/[0.05]' 
+                : 'text-white/[0.02] group-hover:text-accent/[0.05]'
+            }`}>
               {(index + 1).toString().padStart(2, '0')}
             </div>
 
@@ -105,7 +110,7 @@ const SortablePlatformItem = ({
                <div className="flex items-center gap-3 sm:gap-5">
                   <div className="relative">
                      <div className="absolute -inset-2 bg-accent/5 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                     <div className="w-10 h-10 sm:w-14 sm:h-14 bg-black border border-white/10 flex items-center justify-center relative z-10 group-hover:border-accent/30 transition-colors">
+                     <div className={`w-10 h-10 sm:w-14 sm:h-14 bg-black border flex items-center justify-center relative z-10 transition-colors ${p.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-accent/30'}`}>
                         <img 
                           src={getLogoUrl(p.url)} 
                           className="w-5 h-5 sm:w-8 sm:h-8 object-contain transition-all duration-500" 
@@ -115,10 +120,10 @@ const SortablePlatformItem = ({
                      </div>
                   </div>
                   <div className="space-y-0.5 sm:space-y-1">
-                     <h4 className="font-heading text-base sm:text-xl font-black uppercase tracking-tight text-white group-hover:text-accent transition-colors">{p.name}</h4>
+                     <h4 className={`font-heading text-xl sm:text-2xl font-black uppercase tracking-tight transition-colors ${p.isPopular ? 'text-yellow-500' : 'text-white group-hover:text-accent'}`}>{p.name}</h4>
                      <div className="flex items-center gap-2">
-                        <div className={`w-1 h-1 rounded-full animate-pulse ${p.status === 'ACTIVE' ? 'bg-accent' : 'bg-error'}`}></div>
-                        <span className={`text-[6px] sm:text-[7px] font-heading tracking-[0.3em] uppercase font-bold ${p.status === 'ACTIVE' ? 'text-accent/50' : 'text-error/50'}`}>
+                        <div className={`w-1 h-1 rounded-full animate-pulse ${p.status === 'ACTIVE' ? (p.isPopular ? 'bg-yellow-500' : 'bg-accent') : 'bg-error'}`}></div>
+                        <span className={`text-[8px] sm:text-[9px] font-heading tracking-[0.3em] uppercase font-bold ${p.status === 'ACTIVE' ? (p.isPopular ? 'text-yellow-500/50' : 'text-accent/50') : 'text-error/50'}`}>
                           {p.status === 'ACTIVE' ? 'UPLINK_ESTABLISHED' : 'NODE_OFFLINE'}
                         </span>
                      </div>
@@ -128,10 +133,10 @@ const SortablePlatformItem = ({
 
             <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-10 flex-grow group/desc">
                <div className="flex items-center gap-2">
-                  <div className="h-px w-3 sm:w-4 bg-accent/30"></div>
-                  <span className="text-[7px] sm:text-[8px] font-heading text-muted tracking-widest uppercase">Description</span>
+                  <div className={`h-px w-3 sm:w-4 ${p.isPopular ? 'bg-yellow-500/30' : 'bg-accent/30'}`}></div>
+                  <span className="text-[8px] sm:text-[9px] font-heading text-muted tracking-widest uppercase">Description</span>
                </div>
-               <p className="text-[9px] sm:text-[10px] text-muted/80 group-hover/desc:text-white transition-colors uppercase tracking-[0.12em] leading-relaxed font-medium line-clamp-3 sm:line-clamp-none">
+               <p className="text-[10px] sm:text-[11px] text-muted/80 group-hover/desc:text-white transition-colors uppercase tracking-[0.12em] leading-relaxed font-medium line-clamp-3 sm:line-clamp-none">
                   {p.description || 'ESTABLISHING_SECURE_CONNECTION_TO_TRADING_INFRASTRUCTURE_MODULE.'}
                </p>
             </div>
@@ -139,12 +144,12 @@ const SortablePlatformItem = ({
             <div className="space-y-4 sm:space-y-6">
                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                   <div className="p-2 sm:p-3 border border-white/5 bg-white/[0.02] space-y-0.5 sm:space-y-1">
-                     <p className="text-[6px] sm:text-[7px] font-heading text-muted/40 uppercase tracking-widest">TOTAL_CLICKS</p>
-                     <p className="text-[9px] sm:text-[10px] font-heading text-white font-bold">{p.clickCount || 0}</p>
+                     <p className="text-[8px] sm:text-[9px] font-heading text-muted/40 uppercase tracking-widest">TOTAL_CLICKS</p>
+                     <p className="text-[10px] sm:text-[11px] font-heading text-white font-bold">{p.clickCount || 0}</p>
                   </div>
                   <div className="p-2 sm:p-3 border border-white/5 bg-white/[0.02] space-y-0.5 sm:space-y-1">
-                     <p className="text-[6px] sm:text-[7px] font-heading text-muted/40 uppercase tracking-widest">TODAY</p>
-                     <p className="text-[9px] sm:text-[10px] font-heading text-accent font-bold">{p.clicksToday || 0}</p>
+                     <p className="text-[8px] sm:text-[9px] font-heading text-muted/40 uppercase tracking-widest">TODAY</p>
+                     <p className={`text-[10px] sm:text-[11px] font-heading font-bold ${p.isPopular ? 'text-yellow-500' : 'text-accent'}`}>{p.clicksToday || 0}</p>
                   </div>
                </div>
 
@@ -152,10 +157,10 @@ const SortablePlatformItem = ({
                  href={p.registrationUrl} 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="group/btn relative w-full py-3 sm:py-4 bg-accent/5 border border-accent/20 text-accent font-heading text-[8px] sm:text-[9px] font-black tracking-[0.4em] uppercase overflow-hidden transition-all hover:bg-accent hover:text-black active:scale-[0.98] flex items-center justify-center gap-3 square-button"
+                 className={`group/btn relative w-full py-4 sm:py-5 border font-heading text-[10px] sm:text-[11px] font-black tracking-[0.4em] sm:tracking-[0.5em] uppercase overflow-hidden transition-all active:scale-[0.98] flex items-center justify-center gap-3 square-button ${p.isPopular ? 'bg-yellow-500/5 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-black' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent hover:text-black'}`}
                >
                   <span className="relative z-10">REGISTER_ACCOUNT</span>
-                  <ArrowRight size={12} className="relative z-10 group-hover/btn:translate-x-1 transition-transform" />
+                  <ArrowRight size={14} className="sm:size-[16px] relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                </a>
             </div>
          </div>
@@ -165,8 +170,7 @@ const SortablePlatformItem = ({
       <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-3 px-1">
         <button 
           onClick={() => startEdit(p)}
-          className="group/edit relative py-3 sm:py-4 bg-zinc-900 border border-white/5 text-white font-heading text-[8px] sm:text-[9px] font-black tracking-[0.3em] uppercase overflow-hidden transition-all hover:border-accent/50 hover:text-accent active:scale-95 flex items-center justify-center gap-2"
-          style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 85% 100%, 0 100%)' }}
+          className="group/edit relative py-3 sm:py-4 bg-zinc-900 border border-white/5 text-white font-heading text-[8px] sm:text-[9px] font-black tracking-[0.3em] uppercase overflow-hidden transition-all hover:border-accent/50 hover:text-accent active:scale-95 flex items-center justify-center gap-2 square-button"
         >
            <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover/edit:opacity-100 transition-opacity"></div>
            <PenLine size={12} className="group-hover/edit:rotate-12 transition-transform" />
@@ -174,8 +178,7 @@ const SortablePlatformItem = ({
         </button>
         <button 
           onClick={() => setDeleteTarget(p.id)}
-          className="group/del relative py-3 sm:py-4 bg-zinc-900 border border-white/5 text-white font-heading text-[8px] sm:text-[9px] font-black tracking-[0.3em] uppercase overflow-hidden transition-all hover:border-error/50 hover:text-error active:scale-95 flex items-center justify-center gap-2"
-          style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0 100%, 0 30%)' }}
+          className="group/del relative py-3 sm:py-4 bg-zinc-900 border border-white/5 text-white font-heading text-[8px] sm:text-[9px] font-black tracking-[0.3em] uppercase overflow-hidden transition-all hover:border-error/50 hover:text-error active:scale-95 flex items-center justify-center gap-2 square-button"
         >
            <div className="absolute inset-0 bg-error/5 opacity-0 group-hover/del:opacity-100 transition-opacity"></div>
            <Trash2 size={12} className="group-hover/del:scale-110 transition-transform" />
@@ -242,7 +245,8 @@ const AccountRegistrationManager: React.FC = () => {
     url: '',
     registrationUrl: '',
     description: '',
-    status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE'
+    status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE',
+    isPopular: false
   });
 
   const handleSave = async () => {
@@ -274,7 +278,8 @@ const AccountRegistrationManager: React.FC = () => {
       url: '',
       registrationUrl: '',
       description: '',
-      status: 'ACTIVE'
+      status: 'ACTIVE',
+      isPopular: false
     });
     setIsAdding(false);
     setEditingId(null);
@@ -286,7 +291,8 @@ const AccountRegistrationManager: React.FC = () => {
       url: p.url,
       registrationUrl: p.registrationUrl,
       description: p.description,
-      status: p.status
+      status: p.status,
+      isPopular: p.isPopular || false
     });
     setEditingId(p.id);
     setIsAdding(true);
@@ -482,21 +488,35 @@ const AccountRegistrationManager: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[8px] sm:text-[9px] font-heading text-muted uppercase tracking-widest flex items-center gap-2">
-                  <Activity size={12} className="text-accent" /> STATUS
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {['ACTIVE', 'INACTIVE'].map(s => (
-                    <button 
-                      key={s}
-                      onClick={() => setFormData({...formData, status: s as any})}
-                      className={`py-3 font-heading text-[8px] sm:text-[9px] tracking-widest font-black uppercase transition-all ${formData.status === s ? 'bg-accent text-black' : 'bg-white/5 text-muted hover:bg-white/10'}`}
-                      style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
-                    >
-                      {s}
-                    </button>
-                  ))}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[8px] sm:text-[9px] font-heading text-muted uppercase tracking-widest flex items-center gap-2">
+                    <Star size={12} className="text-accent" /> POPULAR_TAG
+                  </label>
+                  <button 
+                    onClick={() => setFormData({...formData, isPopular: !formData.isPopular})}
+                    className={`w-full py-3 font-heading text-[8px] sm:text-[9px] tracking-widest font-black uppercase transition-all ${formData.isPopular ? 'bg-yellow-500 text-black' : 'bg-white/5 text-muted hover:bg-white/10'}`}
+                    style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
+                  >
+                    {formData.isPopular ? 'POPULAR' : 'STANDARD'}
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[8px] sm:text-[9px] font-heading text-muted uppercase tracking-widest flex items-center gap-2">
+                    <Activity size={12} className="text-accent" /> STATUS
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['ACTIVE', 'INACTIVE'].map(s => (
+                      <button 
+                        key={s}
+                        onClick={() => setFormData({...formData, status: s as any})}
+                        className={`py-3 font-heading text-[8px] sm:text-[9px] tracking-widest font-black uppercase transition-all ${formData.status === s ? 'bg-accent text-black' : 'bg-white/5 text-muted hover:bg-white/10'}`}
+                        style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
