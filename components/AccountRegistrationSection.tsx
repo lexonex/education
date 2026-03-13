@@ -19,8 +19,8 @@ const AccountRegistrationSection: React.FC = () => {
             <span className="text-[10px] font-heading text-accent tracking-[0.5em] uppercase font-black">GLOBAL_GATEWAYS</span>
          </div>
          <h2 className="text-4xl sm:text-7xl font-heading font-black uppercase tracking-tighter text-white leading-none">
-           REGISTER<br/>
-           <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/40" style={{ WebkitTextStroke: '1px rgba(0,240,255,0.2)' }}>ACCOUNT</span>
+            REGISTER<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/40" style={{ WebkitTextStroke: '1px rgba(0,240,255,0.2)' }}>ACCOUNT</span>
          </h2>
           <p className="text-[10px] sm:text-[14px] text-muted text-center uppercase tracking-[0.2em] sm:tracking-[0.3em] leading-relaxed font-medium px-4 max-w-2xl mx-auto">
             EXPLORE THE TRADING PLATFORMS LISTED BELOW. CHOOSE YOUR PLATFORM AND ACCESS THE TOOLS AND FEATURES NEEDED TO START TRADING IN THE FINANCIAL MARKETS.
@@ -35,10 +35,10 @@ const AccountRegistrationSection: React.FC = () => {
                    style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
                  
                  {/* Straight Edge Borders - Positioned to stop before the diagonal cuts */}
-                 <div className="absolute top-0 left-[20px] right-0 h-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
+                 <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
                  <div className="absolute top-0 right-0 bottom-[20px] w-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
                  <div className="absolute bottom-0 right-[20px] left-0 h-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
-                 <div className="absolute bottom-0 left-0 top-[20px] w-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
+                 <div className="absolute bottom-0 left-0 top-0 w-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
                  
                  <div className="p-6 sm:p-8 relative z-10 flex flex-col h-full">
                     <div className="absolute top-4 right-6 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black text-white/[0.02] group-hover:text-accent/[0.05] transition-colors leading-none select-none">
@@ -94,10 +94,9 @@ const AccountRegistrationSection: React.FC = () => {
                          target="_blank" 
                          rel="noopener noreferrer"
                          onClick={() => trackPlatformClick(p.id)}
-                         className="group/btn relative w-full py-3 sm:py-4 bg-accent/5 border border-accent/20 text-accent font-heading text-[8px] sm:text-[9px] font-black tracking-[0.3em] sm:tracking-[0.4em] uppercase overflow-hidden transition-all hover:bg-accent hover:text-black active:scale-[0.98] flex items-center justify-center gap-3"
-                         style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 92% 100%, 0 100%)' }}
+                         className="group/btn relative w-full py-3 sm:py-4 bg-accent/5 border border-accent/20 text-accent font-heading text-[8px] sm:text-[9px] font-black tracking-[0.3em] sm:tracking-[0.4em] uppercase overflow-hidden transition-all hover:bg-accent hover:text-black active:scale-[0.98] flex items-center justify-center gap-3 square-button"
                        >
-                          <span className="relative z-10">INITIALIZE_NODE</span>
+                          <span className="relative z-10">REGISTER_ACCOUNT</span>
                           <ArrowRight size={12} className="relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                        </a>
                     </div>
