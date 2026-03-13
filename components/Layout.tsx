@@ -87,7 +87,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, isActive, is
         isActive 
           ? 'text-accent' 
           : 'text-muted/40 hover:text-white'
-      } ${isCollapsed ? 'justify-center px-0' : 'px-6'}`}
+      } ${isCollapsed ? 'lg:justify-center lg:px-0 px-6' : 'px-6'}`}
     >
       {/* Active Line Indicator */}
       {isActive && (
@@ -102,11 +102,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, isActive, is
       }`}></div>
 
       {/* Icon - Perfectly Centered in Collapsed Mode */}
-      <span className={`relative z-10 shrink-0 transition-transform duration-300 flex items-center justify-center ${isCollapsed ? 'w-full scale-110' : 'group-hover:scale-110'}`}>
+      <span className={`relative z-10 shrink-0 transition-transform duration-300 flex items-center justify-center ${isCollapsed ? 'lg:w-full lg:scale-110' : 'group-hover:scale-110'}`}>
         {React.cloneElement(icon as React.ReactElement<any>, { size: 18 })}
       </span>
 
-      <div className={`relative z-10 overflow-hidden transition-all duration-300 ease-in-out ${isCollapsed ? 'w-0 opacity-0 ml-0' : 'w-72 opacity-100 ml-4'}`}>
+      <div className={`relative z-10 overflow-hidden transition-all duration-300 ease-in-out ${isCollapsed ? 'lg:w-0 lg:opacity-0 lg:ml-0 flex-1 opacity-100 ml-4' : 'flex-1 opacity-100 ml-4'}`}>
         <span className="font-heading text-[10px] tracking-[0.3em] uppercase font-black whitespace-nowrap block">
           {label}
         </span>
@@ -214,7 +214,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { fetchActiveData: fetchMoneyData } = useMoneyManagementStore();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 1536);
+  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth >= 1024 && window.innerWidth < 1536);
   const [dataHydrated, setDataHydrated] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -330,7 +330,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <aside 
         className={`fixed inset-y-0 left-0 z-50 bg-[#0A0A0A] border-r border-white/5 transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } ${isCollapsed ? 'w-20' : 'w-96'}`}
+        } ${isCollapsed ? 'lg:w-20 w-[300px]' : 'w-[300px] lg:w-96'}`}
       >
         {/* FLOATING TOGGLE BUTTON */}
         <button 
@@ -343,8 +343,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="h-full flex flex-col relative overflow-hidden">
           
           {/* TOP HEADER: BRANDING - FIXING PERFECT CENTERING */}
-          <div className={`h-20 flex items-center border-b border-white/5 shrink-0 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-6'}`}>
-            <Link to="/" className={`flex items-center transition-all duration-300 ${isCollapsed ? 'justify-center gap-0' : 'gap-4'}`}>
+          <div className={`h-20 flex items-center border-b border-white/5 shrink-0 transition-all duration-300 ${isCollapsed ? 'lg:justify-center lg:px-0 px-6' : 'px-6'}`}>
+            <Link to="/" className={`flex items-center transition-all duration-300 ${isCollapsed ? 'lg:justify-center lg:gap-0 gap-4' : 'gap-4'}`}>
               <div className="p-2.5 bg-[#0A0A0A] border border-accent/20 shrink-0 flex items-center justify-center w-10 h-10 overflow-hidden">
                 {faviconURL ? (
                   <img src={faviconURL || undefined} alt="Logo" className="w-full h-full object-contain" />
@@ -352,7 +352,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <div className="w-full h-full" />
                 )}
               </div>
-              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 h-0' : 'w-auto opacity-100'}`}>
+              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'lg:w-0 lg:opacity-0 lg:h-0 w-auto opacity-100' : 'w-auto opacity-100'}`}>
                 <h1 className="font-heading font-black text-lg uppercase text-white tracking-tighter truncate leading-none">
                   {brandingName}
                 </h1>
@@ -362,10 +362,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
 
           {/* Navigation Sector */}
-          <nav className={`flex-1 overflow-y-auto overflow-x-hidden py-8 px-0 ${isCollapsed ? 'scrollbar-hide' : 'custom-scrollbar'}`}>
-             <div className={`mb-6 transition-all duration-300 flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-6'}`}>
+          <nav className={`flex-1 overflow-y-auto overflow-x-hidden py-8 px-0 ${isCollapsed ? 'lg:scrollbar-hide custom-scrollbar' : 'custom-scrollbar'}`}>
+             <div className={`mb-6 transition-all duration-300 flex items-center ${isCollapsed ? 'lg:justify-center lg:px-0 px-6' : 'px-6'}`}>
                 {isCollapsed ? (
-                  <div className="w-8 h-px bg-accent/20 shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"></div>
+                  <>
+                    <div className="hidden lg:block w-8 h-px bg-accent/20 shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"></div>
+                    <div className="lg:hidden flex items-center gap-3 w-full">
+                      <p className="text-[10px] font-heading tracking-[0.3em] uppercase font-black text-accent/60 whitespace-nowrap">NAVIGATION</p>
+                      <div className="h-px flex-1 bg-white/5"></div>
+                    </div>
+                  </>
                 ) : (
                   <div className="flex items-center gap-3 w-full">
                     <p className="text-[10px] font-heading tracking-[0.3em] uppercase font-black text-accent/60 whitespace-nowrap">NAVIGATION</p>
@@ -385,9 +391,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             {knowledgeBaseItems.length > 0 && (
               <>
-                <div className={`mt-10 mb-6 transition-all duration-300 flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-6'}`}>
+                <div className={`mt-10 mb-6 transition-all duration-300 flex items-center ${isCollapsed ? 'lg:justify-center lg:px-0 px-6' : 'px-6'}`}>
                   {isCollapsed ? (
-                    <div className="w-8 h-px bg-accent/20 shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"></div>
+                    <>
+                      <div className="hidden lg:block w-8 h-px bg-accent/20 shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"></div>
+                      <div className="lg:hidden flex items-center gap-3 w-full">
+                        <p className="text-[10px] font-heading tracking-[0.3em] uppercase font-black text-accent/60 whitespace-nowrap">KNOWLEDGE_BASE</p>
+                        <div className="h-px flex-1 bg-white/5"></div>
+                      </div>
+                    </>
                   ) : (
                     <div className="flex items-center gap-3 w-full">
                       <p className="text-[10px] font-heading tracking-[0.3em] uppercase font-black text-accent/60 whitespace-nowrap">KNOWLEDGE_BASE</p>
@@ -409,9 +421,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             {tools.length > 0 && (
               <>
-                <div className={`mt-10 mb-6 transition-all duration-300 flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-6'}`}>
+                <div className={`mt-10 mb-6 transition-all duration-300 flex items-center ${isCollapsed ? 'lg:justify-center lg:px-0 px-6' : 'px-6'}`}>
                   {isCollapsed ? (
-                    <div className="w-8 h-px bg-accent/20 shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"></div>
+                    <>
+                      <div className="hidden lg:block w-8 h-px bg-accent/20 shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"></div>
+                      <div className="lg:hidden flex items-center gap-3 w-full">
+                        <p className="text-[10px] font-heading tracking-[0.3em] uppercase font-black text-accent/60 whitespace-nowrap">TOOLS</p>
+                        <div className="h-px flex-1 bg-white/5"></div>
+                      </div>
+                    </>
                   ) : (
                     <div className="flex items-center gap-3 w-full">
                       <p className="text-[10px] font-heading tracking-[0.3em] uppercase font-black text-accent/60 whitespace-nowrap">TOOLS</p>
@@ -434,8 +452,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           {/* User Profile Section */}
           <div className="border-t border-white/5 bg-transparent shrink-0">
-            <div className={`flex items-center transition-all duration-300 ${isCollapsed ? 'justify-center py-4 flex-col gap-0' : 'px-6 py-4 gap-4'}`}>
-              <div className={`border border-white/10 bg-zinc-950 overflow-hidden shrink-0 transition-all duration-300 flex items-center justify-center relative group/avatar ${isCollapsed ? 'w-10 h-10' : 'w-11 h-11'}`}>
+            <div className={`flex items-center transition-all duration-300 ${isCollapsed ? 'lg:justify-center lg:py-4 lg:flex-col lg:gap-0 px-6 py-4 gap-4' : 'px-6 py-4 gap-4'}`}>
+              <div className={`border border-white/10 bg-zinc-950 overflow-hidden shrink-0 transition-all duration-300 flex items-center justify-center relative group/avatar ${isCollapsed ? 'lg:w-10 lg:h-10 w-11 h-11' : 'w-11 h-11'}`}>
                 <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-accent/40 group-hover/avatar:border-accent transition-colors"></div>
                 {user?.photoURL ? (
                   <img src={user.photoURL || undefined} className="w-full h-full object-cover grayscale opacity-50" alt="user" />
@@ -443,9 +461,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <div className="w-full h-full flex items-center justify-center text-muted/20"><UserIcon size={18} /></div>
                 )}
               </div>
-              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 h-0' : 'w-auto opacity-100 flex-1'}`}>
-                <p className="text-[9px] font-black uppercase text-white truncate leading-none">{user?.displayName}</p>
-                <p className="text-[7px] text-accent/60 tracking-widest uppercase font-bold mt-1.5 flex items-center gap-1.5 truncate">
+              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'lg:w-0 lg:opacity-0 lg:h-0 w-auto opacity-100 flex-1' : 'w-auto opacity-100 flex-1'}`}>
+                <p className="text-[9px] font-black uppercase text-white leading-none whitespace-nowrap">{user?.displayName}</p>
+                <p className="text-[7px] text-accent/60 tracking-widest uppercase font-bold mt-1.5 flex items-center gap-1.5 whitespace-nowrap">
                   <Target size={8} /> {user?.role}
                 </p>
               </div>
@@ -456,14 +474,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               onClick={logout} 
               className={`flex items-center transition-all duration-300 group hover:bg-error/5 hover:text-error ${
                 isCollapsed 
-                  ? 'h-12 w-full justify-center' 
+                  ? 'lg:h-12 lg:w-full lg:justify-center h-12 w-full px-6' 
                   : 'h-12 w-full px-6'
               }`}
             >
-              <div className={`shrink-0 flex items-center justify-center transition-all duration-300 ${isCollapsed ? 'w-full' : ''}`}>
-                 <LogOut size={16} className={`transition-transform duration-300 group-hover:scale-110 ${isCollapsed ? '' : 'text-muted/40'}`} />
+              <div className={`shrink-0 flex items-center justify-center transition-all duration-300 ${isCollapsed ? 'lg:w-full' : ''}`}>
+                 <LogOut size={16} className={`transition-transform duration-300 group-hover:scale-110 ${isCollapsed ? 'lg:text-white' : 'text-muted/40'}`} />
               </div>
-              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 h-0' : 'opacity-100 ml-4 flex-1 text-left'}`}>
+              <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'lg:w-0 lg:opacity-0 lg:h-0 opacity-100 ml-4 flex-1 text-left' : 'opacity-100 ml-4 flex-1 text-left'}`}>
                 <span className="font-heading text-[9px] uppercase tracking-[0.4em] font-black whitespace-nowrap text-muted/40 group-hover:text-error">LOGOUT</span>
               </div>
             </button>
