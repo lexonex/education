@@ -88,6 +88,7 @@ export interface TradingPlatform {
   clicksToday: number;
   lastClickAt?: string;
   status: 'ACTIVE' | 'INACTIVE';
+  isPopular: boolean;
   adminId: string;
   createdAt: string;
   order: number;
@@ -106,6 +107,7 @@ export interface User {
   address?: string;
   username?: string;
   bookmarks?: string[]; // Array of document IDs
+  lastActive?: string; // ISO timestamp of last activity
 }
 
 export interface Category {
