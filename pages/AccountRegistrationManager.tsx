@@ -87,13 +87,13 @@ const SortablePlatformItem = ({
       </div>
 
       <div className="relative bg-surface group transition-all duration-500 flex flex-col h-full overflow-hidden" 
-           style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}>
+           style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
          
          {/* Straight Edge Borders - Positioned to stop before the diagonal cuts */}
-         <div className="absolute top-0 left-[20px] right-0 h-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
+         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
          <div className="absolute top-0 right-0 bottom-[20px] w-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
          <div className="absolute bottom-0 right-[20px] left-0 h-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
-         <div className="absolute bottom-0 left-0 top-[20px] w-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
+         <div className="absolute bottom-0 left-0 top-0 w-[1px] bg-white/10 group-hover:bg-accent/40 transition-colors z-20"></div>
 
          <div className="p-5 sm:p-8 relative z-10 flex flex-col h-full">
             {/* Index Number */}
@@ -152,10 +152,9 @@ const SortablePlatformItem = ({
                  href={p.registrationUrl} 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="group/btn relative w-full py-3 sm:py-4 bg-accent/5 border border-accent/20 text-accent font-heading text-[8px] sm:text-[9px] font-black tracking-[0.4em] uppercase overflow-hidden transition-all hover:bg-accent hover:text-black active:scale-[0.98] flex items-center justify-center gap-3"
-                 style={{ clipPath: 'polygon(8% 0, 100% 0, 100% 70%, 92% 100%, 0 100%, 0 30%)' }}
+                 className="group/btn relative w-full py-3 sm:py-4 bg-accent/5 border border-accent/20 text-accent font-heading text-[8px] sm:text-[9px] font-black tracking-[0.4em] uppercase overflow-hidden transition-all hover:bg-accent hover:text-black active:scale-[0.98] flex items-center justify-center gap-3 square-button"
                >
-                  <span className="relative z-10">INITIALIZE_NODE</span>
+                  <span className="relative z-10">REGISTER_ACCOUNT</span>
                   <ArrowRight size={12} className="relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                </a>
             </div>
