@@ -319,7 +319,7 @@ const MoneyManagementPage: React.FC = () => {
             <TrendingUp size={16} />
             <p className="text-[10px] font-heading tracking-[0.5em] uppercase font-black">MANAGEMENT</p>
           </div>
-          <h2 className="text-2xl sm:text-5xl font-heading font-black tracking-tighter text-white uppercase leading-none">MONEY_MANAGEMENT</h2>
+          <h2 className="text-2xl sm:text-5xl font-heading font-black tracking-tighter text-white uppercase leading-none">MONEY_MANAGEMENT_V4.0</h2>
         </div>
         
         <div className="hidden md:flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
