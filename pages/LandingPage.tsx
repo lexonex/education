@@ -121,7 +121,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <Link to="/login">
-            <button className="px-4 py-1.5 sm:px-6 sm:py-2 border border-accent/30 bg-accent/5 text-accent font-heading text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-black hover:bg-accent hover:text-black transition-all active:scale-95" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}>
+            <button className="px-4 py-1.5 sm:px-6 sm:py-2 border border-accent/30 bg-accent/5 text-accent font-heading text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-black hover:bg-accent hover:text-black transition-all active:scale-95" style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}>
                LOGIN
             </button>
           </Link>
@@ -151,11 +151,11 @@ const LandingPage: React.FC = () => {
               </p>
               <div className="flex items-center justify-center gap-4 pt-8">
                  <Link to="/login">
-                    <button className="px-8 py-3 sm:px-12 sm:py-4 bg-accent text-black font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:shadow-glow transition-all flex items-center justify-center gap-3 active:scale-95" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}>
+                    <button className="px-8 py-3 sm:px-12 sm:py-4 bg-accent text-black font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:shadow-glow transition-all flex items-center justify-center gap-3 active:scale-95" style={{ clipPath: 'polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)' }}>
                        START <ArrowRight size={14} />
                     </button>
                  </Link>
-                 <button onClick={() => scrollToSection('account_open')} className="px-8 py-3 sm:px-12 sm:py-4 border border-white/10 text-white font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:bg-white/5 transition-all" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}>
+                 <button onClick={() => scrollToSection('account_open')} className="px-8 py-3 sm:px-12 sm:py-4 border border-white/10 text-white font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:bg-white/5 transition-all" style={{ clipPath: 'polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)' }}>
                     DETAILS
                  </button>
               </div>
