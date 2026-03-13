@@ -4,7 +4,7 @@ import { useUIStore } from '../store/uiStore';
 import { useDataStore } from '../store/dataStore';
 import { auth, db, getPath } from '../lib/firebase';
 import { initializeApp, deleteApp } from 'firebase/app';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { 
   getAuth,
   createUserWithEmailAndPassword, 
@@ -381,6 +381,12 @@ const LoginPage: React.FC = () => {
 
   return (
     <div ref={scrollRef} className="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-y-auto font-body text-white selection:bg-accent selection:text-black">
+      
+      {/* Back to Home Button */}
+      <Link to="/" className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-black/50 border border-white/10 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest hover:text-white hover:border-white/30 transition-all backdrop-blur-sm" style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}>
+        <ChevronLeft size={14} /> HOME
+      </Link>
+
       <div className="w-full max-w-[480px] z-10 relative">
         <div className="text-center mb-6 sm:mb-10">
            <div className="flex items-center justify-center gap-4 mb-3 sm:mb-4">
