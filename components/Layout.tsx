@@ -348,11 +348,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className={`h-20 flex items-center border-b border-white/5 shrink-0 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-6'}`}>
             <Link to="/" className={`flex items-center transition-all duration-300 ${isCollapsed ? 'justify-center gap-0' : 'gap-4'}`}>
               <div className="p-2.5 bg-[#0A0A0A] border border-accent/20 shrink-0 flex items-center justify-center w-10 h-10 overflow-hidden">
-                {faviconURL ? (
-                  <img src={faviconURL || undefined} alt="Logo" className="w-full h-full object-contain" />
-                ) : (
-                  <div className="w-full h-full" />
-                )}
+                <img 
+                  src={faviconURL || "/favicon.svg"} 
+                  alt="Logo" 
+                  className="w-full h-full object-contain" 
+                  referrerPolicy="no-referrer"
+                />
               </div>
               <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 h-0' : 'w-auto opacity-100'}`}>
                 <h1 className="font-heading font-black text-lg uppercase text-white tracking-tighter truncate leading-none">
@@ -518,7 +519,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </header>
 
-        <main ref={mainRef} className="flex-1 overflow-y-auto pl-2 pr-1 py-4 sm:p-10 lg:p-12 custom-scrollbar relative overscroll-behavior-none">
+        <main ref={mainRef} className="flex-1 overflow-y-auto pl-2 pr-1 py-2 sm:p-6 lg:p-8 custom-scrollbar relative overscroll-behavior-none">
           <div className="relative z-10 animate-in fade-in zoom-in-95 duration-700">
             {children}
           </div>
