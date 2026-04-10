@@ -66,13 +66,8 @@ const App: React.FC = () => {
   }, [initializePublicSettings]);
 
   useEffect(() => {
-    if (seoTitle) {
-      document.title = seoTitle;
-    } else if (brandingName) {
-      document.title = brandingName;
-    } else {
-      document.title = ' ';
-    }
+    const title = seoTitle || brandingName || 'EDU LEXONEX';
+    document.title = title;
   }, [brandingName, seoTitle]);
 
   useEffect(() => {
