@@ -106,18 +106,45 @@ const App: React.FC = () => {
   }, [seoKeywords]);
 
   useEffect(() => {
-    let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
-    }
+    const updateFavicon = (url: string) => {
+      const isSvg = url.toLowerCase().includes('.svg') || url.startsWith('data:image/svg+xml');
+      const type = isSvg ? 'image/svg+xml' : 'image/x-icon';
+
+      // Update standard icon
+      let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = url;
+      if (isSvg) link.setAttribute('type', 'image/svg+xml');
+      else link.removeAttribute('type');
+
+      // Update apple-touch-icon
+      let appleLink: HTMLLinkElement | null = document.querySelector("link[rel='apple-touch-icon']");
+      if (!appleLink) {
+        appleLink = document.createElement('link');
+        appleLink.rel = 'apple-touch-icon';
+        document.getElementsByTagName('head')[0].appendChild(appleLink);
+      }
+      appleLink.href = url;
+      
+      // Update shortcut icon
+      let shortcutLink: HTMLLinkElement | null = document.querySelector("link[rel='shortcut icon']");
+      if (!shortcutLink) {
+        shortcutLink = document.createElement('link');
+        shortcutLink.rel = 'shortcut icon';
+        document.getElementsByTagName('head')[0].appendChild(shortcutLink);
+      }
+      shortcutLink.href = url;
+    };
 
     if (faviconURL) {
-      link.href = faviconURL;
+      updateFavicon(faviconURL);
     } else {
-      // Set to transparent pixel if no favicon is set
-      link.href = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E";
+      // Default placeholder (Cyan square) instead of transparent pixel
+      updateFavicon("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2300F0FF'/%3E%3C/svg%3E");
     }
   }, [faviconURL]);
 
