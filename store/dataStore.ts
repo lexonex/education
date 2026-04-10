@@ -126,6 +126,8 @@ const firebaseConfig = {
   appId: "1:47491392874:web:b2d040ba976f17bebe7113"
 };
 
+const DEFAULT_BRANDING_NAME = 'EDU LEXONEX';
+
 export const useDataStore = create<DataState>((set, get) => ({
   isInitialized: false,
   students: [],
@@ -140,7 +142,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   registrationToken: 'BSEMS-8821',
   registrationKeyRequired: true,
   defaultAdminId: '',
-  brandingName: '',
+  brandingName: DEFAULT_BRANDING_NAME,
   ownerName: 'Admin Root',
   ownerPhone: '+8801XXXXXXX',
   ownerEmail: 'support@domain.com',
@@ -159,7 +161,7 @@ export const useDataStore = create<DataState>((set, get) => ({
       const data = snapshot.data();
       if (data) {
         set({ 
-          brandingName: data.brandingName || '',
+          brandingName: data.brandingName || DEFAULT_BRANDING_NAME,
           registrationToken: data.masterKey || 'BSEMS-8821',
           registrationKeyRequired: data.registrationKeyRequired ?? true,
           defaultAdminId: data.defaultAdminId || '',
@@ -207,7 +209,7 @@ export const useDataStore = create<DataState>((set, get) => ({
         const data = snapshot.data();
         if (data) {
           set({ 
-            brandingName: data.brandingName || '',
+            brandingName: data.brandingName || DEFAULT_BRANDING_NAME,
             registrationToken: data.masterKey || 'BSEMS-8821',
             registrationKeyRequired: data.registrationKeyRequired ?? true,
             defaultAdminId: data.defaultAdminId || '',
