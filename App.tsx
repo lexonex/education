@@ -66,10 +66,10 @@ const App: React.FC = () => {
   }, [initializePublicSettings]);
 
   useEffect(() => {
-    // Priority: SEO Title > Branding Name > Default
-    const title = seoTitle || brandingName || 'EDU LEXONEX';
-    document.title = title;
-  }, [brandingName, seoTitle]);
+    // Browser tab title will ONLY show SEO Title if provided.
+    // If empty, it will show nothing (browser defaults to URL).
+    document.title = seoTitle || '';
+  }, [seoTitle]);
 
   useEffect(() => {
     let metaDesc = document.querySelector('meta[name="description"]');
