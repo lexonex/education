@@ -363,7 +363,17 @@ export const useDataStore = create<DataState>((set, get) => ({
     await updateDoc(doc(db, getPath(`admins/${adminId}`)), updateData);
     await setDoc(doc(db, getPath('system_config'), 'branding'), updateData, { merge: true });
     
-    set({ brandingName: name, registrationToken: key, faviconURL: favicon, registrationKeyRequired, defaultAdminId, seoTitle, seoDescription, seoKeywords, ...settings });
+    set({ 
+      brandingName: name || DEFAULT_BRANDING_NAME, 
+      registrationToken: key, 
+      faviconURL: favicon, 
+      registrationKeyRequired, 
+      defaultAdminId, 
+      seoTitle, 
+      seoDescription, 
+      seoKeywords, 
+      ...settings 
+    });
   },
 
   updateLastActive: async (uid) => {
