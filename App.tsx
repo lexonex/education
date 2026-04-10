@@ -37,7 +37,19 @@ import MoneyManagementHistory from './pages/MoneyManagementHistory';
 
 const App: React.FC = () => {
   const { isAuthenticated, user, isLoading } = useAuthStore();
-  const { brandingName, faviconURL, initializePublicSettings } = useDataStore();
+  const { brandingName, faviconURL, seoTitle, seoDescription, seoKeywords, initializePublicSettings, updateLastActive } = useDataStore();
+
+  useEffect(() => {
+    if (isAuthenticated && user?.uid) {
+      updateLastActive(user.uid);
+      
+      const interval = setInterval(() => {
+        updateLastActive(user.uid);
+      }, 5 * 60 * 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, user?.uid, updateLastActive]);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
@@ -54,12 +66,44 @@ const App: React.FC = () => {
   }, [initializePublicSettings]);
 
   useEffect(() => {
-    if (brandingName) {
+    if (seoTitle) {
+      document.title = seoTitle;
+    } else if (brandingName) {
       document.title = brandingName;
     } else {
       document.title = ' ';
     }
-  }, [brandingName]);
+  }, [brandingName, seoTitle]);
+
+  useEffect(() => {
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.getElementsByTagName('head')[0].appendChild(metaDesc);
+    }
+    
+    if (seoDescription) {
+      metaDesc.setAttribute('content', seoDescription);
+    } else {
+      metaDesc.setAttribute('content', 'Pioneering dynamic multi-tenant education management through neural grid technologies.');
+    }
+  }, [seoDescription]);
+
+  useEffect(() => {
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      document.getElementsByTagName('head')[0].appendChild(metaKeywords);
+    }
+    
+    if (seoKeywords) {
+      metaKeywords.setAttribute('content', seoKeywords);
+    } else {
+      metaKeywords.setAttribute('content', 'education, management, grid, learning');
+    }
+  }, [seoKeywords]);
 
   useEffect(() => {
     let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
