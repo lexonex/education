@@ -143,8 +143,8 @@ const App: React.FC = () => {
     if (faviconURL) {
       updateFavicon(faviconURL);
     } else {
-      // Default placeholder (Cyan square) instead of transparent pixel
-      updateFavicon("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2300F0FF'/%3E%3C/svg%3E");
+      // Default to public/favicon.svg
+      updateFavicon("/favicon.svg");
     }
   }, [faviconURL]);
 
