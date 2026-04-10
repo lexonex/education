@@ -97,8 +97,6 @@ const SettingsPage: React.FC = () => {
   }, [registrationToken, registrationKeyRequired, defaultAdminId, brandingName, ownerName, ownerPhone, ownerEmail, ownerAddress, whatsappNumber, officeHours, faviconURL, seoTitle, seoDescription, seoKeywords]);
 
   const handleSave = async () => {
-    if (!newName.trim()) return addNotification('ERROR', 'REQUIRED', 'Identifier cannot be empty.');
-    
     setIsSaving(true);
     try {
       // If disabling key requirement, ensure we have a default admin ID (the current admin)
