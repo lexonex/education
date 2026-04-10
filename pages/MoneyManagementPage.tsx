@@ -245,9 +245,41 @@ const MoneyManagementPage: React.FC = () => {
     if (!localSession || localSession.trades.length <= 0) return;
 
     const updatedTrades = [...localSession.trades];
+    const lastTrade = updatedTrades[updatedTrades.length - 1];
     
-    // 1. If the last trade is pending (no outcome), we need to look at the one before it
-    // If there's only one trade and it's pending, we can't undo anything
+    // Check if the session was manually terminated (status is not ACTIVE but last trade has no outcome)
+    const isManualTermination = localSession.status !== 'ACTIVE' && !lastTrade.outcome;
+
+    if (isManualTermination) {
+      setLoading(true);
+      setGlobalLoading(true);
+      try {
+        const sessionUpdate: any = {
+          status: 'ACTIVE',
+          completedAt: null
+        };
+        await updateDoc(doc(db, getPath('money_management_sessions'), localSession.id), sessionUpdate);
+        const updatedSession = { ...localSession, ...sessionUpdate } as MoneyManagementSession;
+        setLocalSession(updatedSession);
+        
+        useMoneyManagementStore.setState(state => ({ 
+          activeSession: updatedSession,
+          historySessions: state.historySessions.map(s => s.id === updatedSession.id ? updatedSession : s)
+        }));
+
+        addLog('PROTOCOL_UNDO', user?.displayName || 'User', `Re-activated manually closed session ${localSession.serialNumber}`);
+        return;
+      } catch (err) {
+        console.error('Error re-activating session:', err);
+        setError('Failed to re-activate session');
+        return;
+      } finally {
+        setLoading(false);
+        setGlobalLoading(false);
+      }
+    }
+
+    // Normal undo logic for completed trades
     if (updatedTrades.length === 1 && !updatedTrades[0].outcome) return;
 
     setLoading(true);
