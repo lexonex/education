@@ -47,6 +47,9 @@ const SettingsPage: React.FC = () => {
     whatsappNumber, 
     officeHours,
     faviconURL,
+    seoTitle,
+    seoDescription,
+    seoKeywords,
     updateSettings, 
     addLog 
   } = useDataStore();
@@ -59,6 +62,9 @@ const SettingsPage: React.FC = () => {
   const [newDefaultAdminId, setNewDefaultAdminId] = useState(defaultAdminId);
   const [newName, setNewName] = useState(brandingName);
   const [newFavicon, setNewFavicon] = useState(faviconURL);
+  const [newSeoTitle, setNewSeoTitle] = useState(seoTitle);
+  const [newSeoDescription, setNewSeoDescription] = useState(seoDescription);
+  const [newSeoKeywords, setNewSeoKeywords] = useState(seoKeywords);
   
   const [contactInfo, setContactInfo] = useState({
     ownerName: ownerName,
@@ -77,6 +83,9 @@ const SettingsPage: React.FC = () => {
     setNewDefaultAdminId(defaultAdminId);
     setNewName(brandingName);
     setNewFavicon(faviconURL);
+    setNewSeoTitle(seoTitle);
+    setNewSeoDescription(seoDescription);
+    setNewSeoKeywords(seoKeywords);
     setContactInfo({
       ownerName,
       ownerPhone,
@@ -85,7 +94,7 @@ const SettingsPage: React.FC = () => {
       whatsappNumber,
       officeHours
     });
-  }, [registrationToken, registrationKeyRequired, defaultAdminId, brandingName, ownerName, ownerPhone, ownerEmail, ownerAddress, whatsappNumber, officeHours, faviconURL]);
+  }, [registrationToken, registrationKeyRequired, defaultAdminId, brandingName, ownerName, ownerPhone, ownerEmail, ownerAddress, whatsappNumber, officeHours, faviconURL, seoTitle, seoDescription, seoKeywords]);
 
   const handleSave = async () => {
     if (!newName.trim()) return addNotification('ERROR', 'REQUIRED', 'Identifier cannot be empty.');
@@ -95,7 +104,7 @@ const SettingsPage: React.FC = () => {
       // If disabling key requirement, ensure we have a default admin ID (the current admin)
       const adminToSet = !newKeyRequired ? (newDefaultAdminId || user?.uid || '') : newDefaultAdminId;
       
-      await updateSettings(newKey, newName, newFavicon, contactInfo, newKeyRequired, adminToSet);
+      await updateSettings(newKey, newName, newFavicon, contactInfo, newKeyRequired, adminToSet, newSeoTitle, newSeoDescription, newSeoKeywords);
       await addLog('SETTINGS_UPDATE', 'Admin', `Updated parameters for ${newName}`);
       addNotification('SUCCESS', 'COMPLETE', 'Institutional parameters synchronized.');
     } catch (e: any) {
@@ -281,6 +290,59 @@ const SettingsPage: React.FC = () => {
                         {newKeyRequired ? 'ENABLED' : 'DISABLED'}
                         {newKeyRequired ? <ShieldCheck size={16} /> : <ShieldX size={16} />}
                       </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <Globe size={18} className="text-accent shrink-0" />
+                    <h3 className="font-heading text-[10px] sm:text-xs tracking-[0.2em] sm:tracking-[0.4em] uppercase font-black text-white">SEO SETTINGS</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="space-y-2.5 group">
+                      <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
+                        SEO TITLE
+                      </label>
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          value={newSeoTitle} 
+                          onChange={(e) => setNewSeoTitle(e.target.value)} 
+                          className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" 
+                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                          placeholder="META TITLE" 
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2.5 group">
+                      <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
+                        SEO DESCRIPTION
+                      </label>
+                      <div className="relative">
+                        <textarea 
+                          value={newSeoDescription} 
+                          onChange={(e) => setNewSeoDescription(e.target.value)} 
+                          className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300 h-24 resize-none" 
+                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                          placeholder="META DESCRIPTION" 
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2.5 group">
+                      <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
+                        SEO KEYWORDS
+                      </label>
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          value={newSeoKeywords} 
+                          onChange={(e) => setNewSeoKeywords(e.target.value)} 
+                          className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" 
+                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                          placeholder="KEYWORDS (COMMA SEPARATED)" 
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
