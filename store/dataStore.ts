@@ -53,6 +53,9 @@ interface DataState {
   whatsappNumber: string;
   officeHours: string;
   faviconURL: string;
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string;
   
   initializePublicSettings: () => void;
   initializeListeners: (adminId: string, role: UserRole, userId?: string) => void;
@@ -98,7 +101,8 @@ interface DataState {
 
   addLog: (action: string, userName: string, details: string) => Promise<void>;
   clearLogs: () => Promise<void>;
-  updateSettings: (key: string, name: string, favicon: string, settings: Partial<AdminContactSettings>, registrationKeyRequired: boolean, defaultAdminId: string) => Promise<void>;
+  updateSettings: (key: string, name: string, favicon: string, settings: Partial<AdminContactSettings>, registrationKeyRequired: boolean, defaultAdminId: string, seoTitle: string, seoDescription: string, seoKeywords: string) => Promise<void>;
+  updateLastActive: (uid: string) => Promise<void>;
 }
 
 interface AdminContactSettings {
@@ -144,6 +148,9 @@ export const useDataStore = create<DataState>((set, get) => ({
   whatsappNumber: '+8801XXXXXXX',
   officeHours: 'Sat - Thu: 09:00 - 18:00',
   faviconURL: '',
+  seoTitle: '',
+  seoDescription: '',
+  seoKeywords: '',
 
   initializePublicSettings: () => {
     if (publicUnsub) return;
@@ -163,6 +170,9 @@ export const useDataStore = create<DataState>((set, get) => ({
           whatsappNumber: data.whatsappNumber || '+8801XXXXXXX',
           officeHours: data.officeHours || 'Sat - Thu: 09:00 - 18:00',
           faviconURL: data.faviconURL || '',
+          seoTitle: data.seoTitle || '',
+          seoDescription: data.seoDescription || '',
+          seoKeywords: data.seoKeywords || '',
           isInitialized: true
         });
       } else {
@@ -207,7 +217,10 @@ export const useDataStore = create<DataState>((set, get) => ({
             ownerAddress: data.ownerAddress || 'Global Grid Sector 01',
             whatsappNumber: data.whatsappNumber || '+8801XXXXXXX',
             officeHours: data.officeHours || 'Sat - Thu: 09:00 - 18:00',
-            faviconURL: data.faviconURL || ''
+            faviconURL: data.faviconURL || '',
+            seoTitle: data.seoTitle || '',
+            seoDescription: data.seoDescription || '',
+            seoKeywords: data.seoKeywords || ''
           });
         }
       }, (err) => console.warn("Admin profile fetch restricted:", err.message));
@@ -329,7 +342,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     }
   },
 
-  updateSettings: async (key, name, favicon, settings, registrationKeyRequired, defaultAdminId) => {
+  updateSettings: async (key, name, favicon, settings, registrationKeyRequired, defaultAdminId, seoTitle, seoDescription, seoKeywords) => {
     const adminId = get().currentAdminId;
     if (!adminId) return;
     
@@ -339,13 +352,34 @@ export const useDataStore = create<DataState>((set, get) => ({
       faviconURL: favicon,
       registrationKeyRequired,
       defaultAdminId,
+      seoTitle,
+      seoDescription,
+      seoKeywords,
       ...settings
     };
 
     await updateDoc(doc(db, getPath(`admins/${adminId}`)), updateData);
     await setDoc(doc(db, getPath('system_config'), 'branding'), updateData, { merge: true });
     
-    set({ brandingName: name, registrationToken: key, faviconURL: favicon, registrationKeyRequired, defaultAdminId, ...settings });
+    set({ brandingName: name, registrationToken: key, faviconURL: favicon, registrationKeyRequired, defaultAdminId, seoTitle, seoDescription, seoKeywords, ...settings });
+  },
+
+  updateLastActive: async (uid) => {
+    if (!uid) return;
+    const mappingRef = doc(db, getPath('user_mappings'), uid);
+    const mappingSnap = await getDoc(mappingRef);
+    if (!mappingSnap.exists()) return;
+    
+    const { role, adminId } = mappingSnap.data();
+    const now = new Date().toISOString();
+    
+    const profilePath = role === UserRole.ADMIN ? doc(db, getPath('admins'), uid) : doc(db, getPath(`admins/${adminId}/students`), uid);
+    
+    try {
+      await updateDoc(profilePath, { lastActive: now });
+    } catch (e) {
+      console.warn("Failed to update lastActive:", e);
+    }
   },
 
   registerStudent: async (data) => {
