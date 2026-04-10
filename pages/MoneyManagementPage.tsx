@@ -8,7 +8,7 @@ import { useMoneyManagementStore } from '../store/moneyManagementStore';
 import { calculateVMatrix, calculateBetAmount, getExpectedFinalCapital } from '../lib/moneyManagement';
 import { db, getPath } from '../lib/firebase';
 import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp, orderBy, limit } from 'firebase/firestore';
-import { Play, RotateCcw, TrendingUp, Target, DollarSign, CheckCircle2, XCircle, History, ChevronRight, AlertTriangle, Activity, ShieldAlert, Database, ArrowDownWideNarrow, ArrowUpNarrowWide, Percent, Zap, Info, Layers, Cpu, ChevronLeft } from 'lucide-react';
+import { Play, RotateCcw, TrendingUp, Target, DollarSign, CheckCircle2, XCircle, History, ChevronRight, AlertTriangle, Activity, ShieldAlert, Database, ArrowDownWideNarrow, ArrowUpNarrowWide, Percent, Zap, Info, Layers, Cpu, ChevronLeft, Undo2 } from 'lucide-react';
 import { isPermissionActive } from '../lib/utils';
 
 const MoneyManagementPage: React.FC = () => {
@@ -241,6 +241,84 @@ const MoneyManagementPage: React.FC = () => {
     }
   };
 
+  const handleUndoTrade = async () => {
+    if (!localSession || localSession.trades.length <= 0) return;
+
+    const updatedTrades = [...localSession.trades];
+    
+    // 1. If the last trade is pending (no outcome), we need to look at the one before it
+    // If there's only one trade and it's pending, we can't undo anything
+    if (updatedTrades.length === 1 && !updatedTrades[0].outcome) return;
+
+    setLoading(true);
+    setGlobalLoading(true);
+
+    try {
+      // If the last trade is pending, remove it first
+      if (!updatedTrades[updatedTrades.length - 1].outcome) {
+        updatedTrades.pop();
+      }
+
+      if (updatedTrades.length === 0) {
+        setLoading(false);
+        setGlobalLoading(false);
+        return;
+      }
+
+      // Now the last trade in updatedTrades is the one we want to revert
+      const lastCompletedTrade = updatedTrades[updatedTrades.length - 1];
+      const outcome = lastCompletedTrade.outcome;
+
+      // Revert wins/losses
+      const newWins = outcome === 'WIN' ? localSession.wins - 1 : localSession.wins;
+      const newLosses = outcome === 'LOSE' ? localSession.losses - 1 : localSession.losses;
+
+      // Revert capital
+      let previousCapital = localSession.initialCapital;
+      if (updatedTrades.length > 1) {
+        // Capital before this trade was the currentCapital of the trade before it
+        previousCapital = updatedTrades[updatedTrades.length - 2].currentCapital;
+      }
+
+      // Reset the last trade to pending
+      const { outcome: _, ...restOfTrade } = lastCompletedTrade;
+      updatedTrades[updatedTrades.length - 1] = {
+        ...restOfTrade,
+        returnAmount: 0,
+        currentCapital: previousCapital,
+        timestamp: new Date().toISOString()
+      };
+
+      const sessionUpdate: any = {
+        currentCapital: Number(previousCapital.toFixed(2)),
+        wins: newWins,
+        losses: newLosses,
+        status: 'ACTIVE',
+        trades: updatedTrades,
+        completedAt: null
+      };
+
+      await updateDoc(doc(db, getPath('money_management_sessions'), localSession.id), sessionUpdate);
+      const updatedSession = { ...localSession, ...sessionUpdate } as MoneyManagementSession;
+      setLocalSession(updatedSession);
+      
+      // Update Store
+      useMoneyManagementStore.setState(state => ({ 
+        activeSession: updatedSession,
+        historySessions: state.historySessions.map(s => s.id === updatedSession.id ? updatedSession : s)
+      }));
+
+      addLog('PROTOCOL_UNDO', user?.displayName || 'User', `Reverted trade #${lastCompletedTrade.tradeNo} in session ${localSession.serialNumber}`);
+      
+    } catch (err) {
+      console.error('Error undoing trade:', err);
+      setError('Failed to undo trade');
+    } finally {
+      setLoading(false);
+      setGlobalLoading(false);
+    }
+  };
+
   const handleTerminateSession = async () => {
     if (!localSession) return;
     setLoading(true);
@@ -319,7 +397,7 @@ const MoneyManagementPage: React.FC = () => {
             <TrendingUp size={16} />
             <p className="text-[10px] font-heading tracking-[0.5em] uppercase font-black">MANAGEMENT</p>
           </div>
-          <h2 className="text-2xl sm:text-5xl font-heading font-black tracking-tighter text-white uppercase leading-none">MONEY_MANAGEMENT_V4.0</h2>
+          <h2 className="text-2xl sm:text-5xl font-heading font-black tracking-tighter text-white uppercase leading-none">MONEY_MANAGEMENT</h2>
         </div>
         
         <div className="hidden md:flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
@@ -844,6 +922,19 @@ const MoneyManagementPage: React.FC = () => {
                         </button>
                       </div>
 
+                      {/* Undo Button */}
+                      {localSession.trades.length > 1 || (localSession.trades.length === 1 && localSession.trades[0].outcome) ? (
+                        <button 
+                          onClick={handleUndoTrade}
+                          disabled={loading}
+                          className="w-full group/btn relative py-3 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden bg-white/5 border border-white/10 text-muted hover:bg-white/10 hover:text-white disabled:opacity-50"
+                          style={{ clipPath: 'polygon(5% 0, 100% 0, 100% 70%, 95% 100%, 0 100%, 0 30%)' }}
+                        >
+                          <Undo2 size={14} className="text-muted group-hover/btn:text-white transition-colors" />
+                          <span className="text-[9px] font-heading font-black uppercase tracking-[0.3em]">UNDO_PREVIOUS_STEP</span>
+                        </button>
+                      ) : null}
+
                       <div className="flex justify-between items-center px-5 py-4 bg-black/40 border border-white/5 relative group-hover:border-white/10 transition-colors">
                         <span className="text-[9px] font-heading text-muted/60 uppercase tracking-[0.3em]">EXPECTED_PROFIT</span>
                         <span className="text-lg font-mono font-black text-accent">
@@ -890,14 +981,26 @@ const MoneyManagementPage: React.FC = () => {
                         </div>
                       </div>
                       
-                      <button 
-                        onClick={resetSession}
-                        className="w-full py-5 bg-white text-black font-heading font-black text-[10px] sm:text-[12px] tracking-[0.4em] sm:tracking-[0.6em] uppercase hover:bg-accent transition-all flex items-center justify-center gap-3 group/btn shadow-glow-sm"
-                        style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
-                      >
-                        NEW_SESSION
-                        <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
-                      </button>
+                      <div className="flex flex-col gap-4">
+                        <button 
+                          onClick={resetSession}
+                          className="w-full py-5 bg-white text-black font-heading font-black text-[10px] sm:text-[12px] tracking-[0.4em] sm:tracking-[0.6em] uppercase hover:bg-accent transition-all flex items-center justify-center gap-3 group/btn shadow-glow-sm"
+                          style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
+                        >
+                          NEW_SESSION
+                          <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                        </button>
+
+                        <button 
+                          onClick={handleUndoTrade}
+                          disabled={loading}
+                          className="w-full group/btn relative py-4 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden bg-white/5 border border-white/10 text-muted hover:bg-white/10 hover:text-white disabled:opacity-50"
+                          style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
+                        >
+                          <Undo2 size={16} className="text-muted group-hover/btn:text-white transition-colors" />
+                          <span className="text-[10px] font-heading font-black uppercase tracking-[0.3em]">UNDO_LAST_ACTION</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
