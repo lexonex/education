@@ -66,6 +66,7 @@ const App: React.FC = () => {
   }, [initializePublicSettings]);
 
   useEffect(() => {
+    // Priority: SEO Title > Branding Name > Default
     const title = seoTitle || brandingName || 'EDU LEXONEX';
     document.title = title;
   }, [brandingName, seoTitle]);
