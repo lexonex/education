@@ -37,7 +37,7 @@ import MoneyManagementHistory from './pages/MoneyManagementHistory';
 
 const App: React.FC = () => {
   const { isAuthenticated, user, isLoading } = useAuthStore();
-  const { brandingName, faviconURL, seoTitle, seoDescription, seoKeywords, seoImage, initializePublicSettings, updateLastActive } = useDataStore();
+  const { brandingName, faviconURL, seoTitle, seoDescription, seoKeywords, initializePublicSettings, updateLastActive } = useDataStore();
 
   useEffect(() => {
     if (isAuthenticated && user?.uid) {
@@ -72,35 +72,34 @@ const App: React.FC = () => {
   }, [seoTitle]);
 
   useEffect(() => {
-    const updateMeta = (name: string, content: string, isProperty = false) => {
-      const attr = isProperty ? 'property' : 'name';
-      let meta = document.querySelector(`meta[${attr}="${name}"]`);
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute(attr, name);
-        document.getElementsByTagName('head')[0].appendChild(meta);
-      }
-      meta.setAttribute('content', content);
-    };
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.getElementsByTagName('head')[0].appendChild(metaDesc);
+    }
+    
+    if (seoDescription) {
+      metaDesc.setAttribute('content', seoDescription);
+    } else {
+      metaDesc.setAttribute('content', 'Pioneering dynamic multi-tenant education management through neural grid technologies.');
+    }
+  }, [seoDescription]);
 
-    // Standard Meta
-    updateMeta('description', seoDescription || 'Pioneering dynamic multi-tenant education management through neural grid technologies.');
-    updateMeta('keywords', seoKeywords || 'education, management, grid, learning');
-
-    // Open Graph
-    updateMeta('og:title', seoTitle || brandingName, true);
-    updateMeta('og:description', seoDescription || 'Education Management System', true);
-    updateMeta('og:image', seoImage || faviconURL || '/favicon.svg', true);
-    updateMeta('og:type', 'website', true);
-    updateMeta('og:site_name', brandingName, true);
-
-    // Twitter
-    updateMeta('twitter:card', 'summary_large_image');
-    updateMeta('twitter:title', seoTitle || brandingName);
-    updateMeta('twitter:description', seoDescription || 'Education Management System');
-    updateMeta('twitter:image', seoImage || faviconURL || '/favicon.svg');
-
-  }, [seoTitle, seoDescription, seoKeywords, seoImage, brandingName, faviconURL]);
+  useEffect(() => {
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      document.getElementsByTagName('head')[0].appendChild(metaKeywords);
+    }
+    
+    if (seoKeywords) {
+      metaKeywords.setAttribute('content', seoKeywords);
+    } else {
+      metaKeywords.setAttribute('content', 'education, management, grid, learning');
+    }
+  }, [seoKeywords]);
 
   useEffect(() => {
     const updateFavicon = (url: string) => {
