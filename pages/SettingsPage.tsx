@@ -50,7 +50,6 @@ const SettingsPage: React.FC = () => {
     seoTitle,
     seoDescription,
     seoKeywords,
-    seoImage,
     updateSettings, 
     addLog 
   } = useDataStore();
@@ -66,7 +65,6 @@ const SettingsPage: React.FC = () => {
   const [newSeoTitle, setNewSeoTitle] = useState(seoTitle);
   const [newSeoDescription, setNewSeoDescription] = useState(seoDescription);
   const [newSeoKeywords, setNewSeoKeywords] = useState(seoKeywords);
-  const [newSeoImage, setNewSeoImage] = useState(seoImage);
   
   const [contactInfo, setContactInfo] = useState({
     ownerName: ownerName,
@@ -88,7 +86,6 @@ const SettingsPage: React.FC = () => {
     setNewSeoTitle(seoTitle);
     setNewSeoDescription(seoDescription);
     setNewSeoKeywords(seoKeywords);
-    setNewSeoImage(seoImage);
     setContactInfo({
       ownerName,
       ownerPhone,
@@ -105,7 +102,7 @@ const SettingsPage: React.FC = () => {
       // If disabling key requirement, ensure we have a default admin ID (the current admin)
       const adminToSet = !newKeyRequired ? (newDefaultAdminId || user?.uid || '') : newDefaultAdminId;
       
-      await updateSettings(newKey, newName, newFavicon, contactInfo, newKeyRequired, adminToSet, newSeoTitle, newSeoDescription, newSeoKeywords, newSeoImage);
+      await updateSettings(newKey, newName, newFavicon, contactInfo, newKeyRequired, adminToSet, newSeoTitle, newSeoDescription, newSeoKeywords);
       await addLog('SETTINGS_UPDATE', 'Admin', `Updated parameters for ${newName}`);
       addNotification('SUCCESS', 'COMPLETE', 'Institutional parameters synchronized.');
     } catch (e: any) {
@@ -127,18 +124,6 @@ const SettingsPage: React.FC = () => {
       }
       const reader = new FileReader();
       reader.onloadend = () => setNewFavicon(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSeoImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 1024 * 1024) {
-        return addNotification('ERROR', 'FILE_TOO_LARGE', 'Image must be under 1MB.');
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => setNewSeoImage(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -355,82 +340,6 @@ const SettingsPage: React.FC = () => {
                           style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
                           placeholder="KEYWORDS (COMMA SEPARATED)" 
                         />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2.5 group">
-                      <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
-                        SOCIAL PREVIEW IMAGE (OG:IMAGE)
-                      </label>
-                      <div className="space-y-4">
-                        {/* Social Preview Card */}
-                        <div className="bg-black/40 border border-white/5 p-4 space-y-3">
-                          <p className="text-[8px] font-heading text-muted/40 uppercase tracking-widest">PREVIEW (WHAT OTHERS SEE)</p>
-                          <div className="bg-[#1a1a1a] border border-white/10 overflow-hidden max-w-[300px]">
-                            <div className="aspect-[1200/630] bg-black flex items-center justify-center overflow-hidden">
-                              {newSeoImage ? (
-                                <img src={newSeoImage} className="w-full h-full object-cover" alt="Social Preview" />
-                              ) : (
-                                <div className="text-[8px] font-heading text-muted/20 uppercase">NO IMAGE</div>
-                              )}
-                            </div>
-                            <div className="p-3 space-y-1">
-                              <p className="text-[10px] font-heading text-white truncate uppercase tracking-widest">{seoTitle || brandingName || 'EDU LEXONEX'}</p>
-                              <p className="text-[8px] text-muted line-clamp-2 leading-relaxed">{seoDescription || 'Pioneering dynamic multi-tenant education management through neural grid technologies.'}</p>
-                              <p className="text-[7px] text-accent/40 uppercase tracking-tighter truncate">{window.location.hostname}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-6">
-                          <div className="relative group">
-                            <div className="w-32 h-20 bg-black border border-white/10 p-1 flex items-center justify-center relative overflow-hidden">
-                              {newSeoImage ? (
-                                <img src={newSeoImage} className="w-full h-full object-cover" alt="SEO Preview" />
-                              ) : (
-                                <ImageIcon size={24} className="text-white/10" />
-                              )}
-                              <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/10 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                 <Camera size={16} className="text-accent" />
-                              </div>
-                            </div>
-                            <input 
-                              type="file" 
-                              accept="image/*" 
-                              onChange={handleSeoImageUpload} 
-                              className="absolute inset-0 opacity-0 cursor-pointer" 
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <p className="text-[8px] font-heading text-white uppercase tracking-widest">UPLOAD IMAGE</p>
-                            <p className="text-[7px] font-heading text-muted uppercase tracking-widest leading-relaxed">Recommended: 1200x630px.<br/>Max size: 1MB.</p>
-                            {newSeoImage && (
-                              <button 
-                                onClick={() => setNewSeoImage('')} 
-                                className="text-[7px] font-heading text-error/60 hover:text-error uppercase tracking-widest transition-all"
-                              >
-                                [ REMOVE ]
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2 group">
-                          <label className="text-[9px] font-heading text-muted/40 uppercase tracking-widest pl-1">OR PASTE IMAGE URL (RECOMMENDED FOR SOCIAL MEDIA)</label>
-                          <div className="relative">
-                            <input 
-                              type="text" 
-                              value={newSeoImage.startsWith('data:') ? '' : newSeoImage} 
-                              onChange={(e) => setNewSeoImage(e.target.value)} 
-                              className="w-full bg-white/[0.02] border border-white/10 p-3 text-[10px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" 
-                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%)' }}
-                              placeholder="https://example.com/image.jpg" 
-                            />
-                          </div>
-                          <p className="text-[8px] text-yellow-500/60 uppercase tracking-tight pl-1 leading-relaxed">
-                            Note: Social media platforms (Facebook, IMO, etc.) usually require a direct URL to an image. Uploaded images (Base64) may not show up in previews.
-                          </p>
-                        </div>
                       </div>
                     </div>
                   </div>
