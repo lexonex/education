@@ -362,36 +362,55 @@ const SettingsPage: React.FC = () => {
                       <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
                         SOCIAL PREVIEW IMAGE (OG:IMAGE)
                       </label>
-                      <div className="flex items-center gap-6">
-                        <div className="relative group">
-                          <div className="w-32 h-20 bg-black border border-white/10 p-1 flex items-center justify-center relative overflow-hidden">
-                            {newSeoImage ? (
-                              <img src={newSeoImage} className="w-full h-full object-cover" alt="SEO Preview" />
-                            ) : (
-                              <ImageIcon size={24} className="text-white/10" />
-                            )}
-                            <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/10 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                               <Camera size={16} className="text-accent" />
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-6">
+                          <div className="relative group">
+                            <div className="w-32 h-20 bg-black border border-white/10 p-1 flex items-center justify-center relative overflow-hidden">
+                              {newSeoImage ? (
+                                <img src={newSeoImage} className="w-full h-full object-cover" alt="SEO Preview" />
+                              ) : (
+                                <ImageIcon size={24} className="text-white/10" />
+                              )}
+                              <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/10 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                 <Camera size={16} className="text-accent" />
+                              </div>
                             </div>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={handleSeoImageUpload} 
+                              className="absolute inset-0 opacity-0 cursor-pointer" 
+                            />
                           </div>
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            onChange={handleSeoImageUpload} 
-                            className="absolute inset-0 opacity-0 cursor-pointer" 
-                          />
+                          <div className="space-y-2">
+                            <p className="text-[8px] font-heading text-white uppercase tracking-widest">UPLOAD IMAGE</p>
+                            <p className="text-[7px] font-heading text-muted uppercase tracking-widest leading-relaxed">Recommended: 1200x630px.<br/>Max size: 1MB.</p>
+                            {newSeoImage && (
+                              <button 
+                                onClick={() => setNewSeoImage('')} 
+                                className="text-[7px] font-heading text-error/60 hover:text-error uppercase tracking-widest transition-all"
+                              >
+                                [ REMOVE ]
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <p className="text-[8px] font-heading text-white uppercase tracking-widest">UPLOAD IMAGE</p>
-                          <p className="text-[7px] font-heading text-muted uppercase tracking-widest leading-relaxed">Recommended: 1200x630px.<br/>Max size: 1MB.</p>
-                          {newSeoImage && (
-                            <button 
-                              onClick={() => setNewSeoImage('')} 
-                              className="text-[7px] font-heading text-error/60 hover:text-error uppercase tracking-widest transition-all"
-                            >
-                              [ REMOVE ]
-                            </button>
-                          )}
+
+                        <div className="space-y-2 group">
+                          <label className="text-[9px] font-heading text-muted/40 uppercase tracking-widest pl-1">OR PASTE IMAGE URL (RECOMMENDED FOR SOCIAL MEDIA)</label>
+                          <div className="relative">
+                            <input 
+                              type="text" 
+                              value={newSeoImage.startsWith('data:') ? '' : newSeoImage} 
+                              onChange={(e) => setNewSeoImage(e.target.value)} 
+                              className="w-full bg-white/[0.02] border border-white/10 p-3 text-[10px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" 
+                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%)' }}
+                              placeholder="https://example.com/image.jpg" 
+                            />
+                          </div>
+                          <p className="text-[8px] text-yellow-500/60 uppercase tracking-tight pl-1 leading-relaxed">
+                            Note: Social media platforms (Facebook, IMO, etc.) usually require a direct URL to an image. Uploaded images (Base64) may not show up in previews.
+                          </p>
                         </div>
                       </div>
                     </div>
