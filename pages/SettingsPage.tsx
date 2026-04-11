@@ -363,6 +363,25 @@ const SettingsPage: React.FC = () => {
                         SOCIAL PREVIEW IMAGE (OG:IMAGE)
                       </label>
                       <div className="space-y-4">
+                        {/* Social Preview Card */}
+                        <div className="bg-black/40 border border-white/5 p-4 space-y-3">
+                          <p className="text-[8px] font-heading text-muted/40 uppercase tracking-widest">PREVIEW (WHAT OTHERS SEE)</p>
+                          <div className="bg-[#1a1a1a] border border-white/10 overflow-hidden max-w-[300px]">
+                            <div className="aspect-[1200/630] bg-black flex items-center justify-center overflow-hidden">
+                              {newSeoImage ? (
+                                <img src={newSeoImage} className="w-full h-full object-cover" alt="Social Preview" />
+                              ) : (
+                                <div className="text-[8px] font-heading text-muted/20 uppercase">NO IMAGE</div>
+                              )}
+                            </div>
+                            <div className="p-3 space-y-1">
+                              <p className="text-[10px] font-heading text-white truncate uppercase tracking-widest">{seoTitle || brandingName || 'EDU LEXONEX'}</p>
+                              <p className="text-[8px] text-muted line-clamp-2 leading-relaxed">{seoDescription || 'Pioneering dynamic multi-tenant education management through neural grid technologies.'}</p>
+                              <p className="text-[7px] text-accent/40 uppercase tracking-tighter truncate">{window.location.hostname}</p>
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="flex items-center gap-6">
                           <div className="relative group">
                             <div className="w-32 h-20 bg-black border border-white/10 p-1 flex items-center justify-center relative overflow-hidden">
