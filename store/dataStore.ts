@@ -56,7 +56,6 @@ interface DataState {
   seoTitle: string;
   seoDescription: string;
   seoKeywords: string;
-  seoImage: string;
   
   initializePublicSettings: () => void;
   initializeListeners: (adminId: string, role: UserRole, userId?: string) => void;
@@ -102,7 +101,7 @@ interface DataState {
 
   addLog: (action: string, userName: string, details: string) => Promise<void>;
   clearLogs: () => Promise<void>;
-  updateSettings: (key: string, name: string, favicon: string, settings: Partial<AdminContactSettings>, registrationKeyRequired: boolean, defaultAdminId: string, seoTitle: string, seoDescription: string, seoKeywords: string, seoImage: string) => Promise<void>;
+  updateSettings: (key: string, name: string, favicon: string, settings: Partial<AdminContactSettings>, registrationKeyRequired: boolean, defaultAdminId: string, seoTitle: string, seoDescription: string, seoKeywords: string) => Promise<void>;
   updateLastActive: (uid: string) => Promise<void>;
 }
 
@@ -154,7 +153,6 @@ export const useDataStore = create<DataState>((set, get) => ({
   seoTitle: '',
   seoDescription: '',
   seoKeywords: '',
-  seoImage: '',
 
   initializePublicSettings: () => {
     if (publicUnsub) return;
@@ -177,7 +175,6 @@ export const useDataStore = create<DataState>((set, get) => ({
           seoTitle: data.seoTitle || '',
           seoDescription: data.seoDescription || '',
           seoKeywords: data.seoKeywords || '',
-          seoImage: data.seoImage || '',
           isInitialized: true
         });
       } else {
@@ -225,8 +222,7 @@ export const useDataStore = create<DataState>((set, get) => ({
             faviconURL: data.faviconURL || '',
             seoTitle: data.seoTitle || '',
             seoDescription: data.seoDescription || '',
-            seoKeywords: data.seoKeywords || '',
-            seoImage: data.seoImage || ''
+            seoKeywords: data.seoKeywords || ''
           });
         }
       }, (err) => console.warn("Admin profile fetch restricted:", err.message));
@@ -348,7 +344,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     }
   },
 
-  updateSettings: async (key, name, favicon, settings, registrationKeyRequired, defaultAdminId, seoTitle, seoDescription, seoKeywords, seoImage) => {
+  updateSettings: async (key, name, favicon, settings, registrationKeyRequired, defaultAdminId, seoTitle, seoDescription, seoKeywords) => {
     const adminId = get().currentAdminId;
     if (!adminId) return;
     
@@ -361,7 +357,6 @@ export const useDataStore = create<DataState>((set, get) => ({
       seoTitle,
       seoDescription,
       seoKeywords,
-      seoImage,
       ...settings
     };
 
@@ -377,7 +372,6 @@ export const useDataStore = create<DataState>((set, get) => ({
       seoTitle, 
       seoDescription, 
       seoKeywords, 
-      seoImage,
       ...settings 
     });
   },
