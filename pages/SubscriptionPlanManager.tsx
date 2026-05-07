@@ -93,9 +93,12 @@ const SortablePlanItem = ({
             <div className="absolute -top-5 -right-5 sm:-top-6 sm:-right-6 bg-yellow-500 text-black px-6 sm:px-8 py-1 sm:py-1.5 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em]" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 15% 100%)' }}>RECOMMENDED</div>
           )}
           <h4 className={`font-heading text-xl sm:text-2xl font-black uppercase tracking-tighter mb-1 ${p.isPopular ? 'text-yellow-500' : 'text-white'}`}>{p.name}</h4>
+          {p.subtitle && (
+            <p className="text-[10px] text-accent/80 font-heading uppercase tracking-widest mb-1 italic">{p.subtitle}</p>
+          )}
           <div className="flex items-center gap-2">
             <Clock size={10} className="text-muted/40" />
-            <p className="text-[8px] sm:text-[9px] text-muted uppercase tracking-[0.2em] font-bold">{p.durationDays} DAYS CLEARANCE</p>
+            <p className="text-[8px] sm:text-[9px] text-muted uppercase tracking-[0.2em] font-bold">{p.durationDays} DAYS DURATION</p>
           </div>
         </div>
 
@@ -125,6 +128,23 @@ const SortablePlanItem = ({
               </div>
             );
           })}
+
+          {(p.keyFeatures && p.keyFeatures.length > 0) && (
+            <div className="pt-6 mt-6 border-t border-white/5 space-y-3">
+               <p className="text-[8px] font-heading text-muted uppercase tracking-[0.3em] font-bold mb-4 opacity-40">KEY_METADATA</p>
+               {p.keyFeatures.map((f, i) => {
+                 const statusColor = f.status === 'UNAVAILABLE' ? 'text-red-500' : 
+                                   f.status === 'POPULAR' ? 'text-yellow-500' : 
+                                   f.status === 'SPECIAL' ? 'text-green-500' : 'text-accent';
+                 return (
+                    <div key={i} className="flex items-center justify-between text-[9px] uppercase tracking-widest">
+                       <span className="text-white/40">{f.text.split(':')[0]}:</span>
+                       <span className={`font-bold ${statusColor}`}>{f.text.split(':')[1] || (f.isAvailable ? 'YES' : 'NO')}</span>
+                    </div>
+                 )
+               })}
+            </div>
+          )}
         </div>
 
         <button 
@@ -212,16 +232,20 @@ const SubscriptionPlanManager: React.FC = () => {
   
   const [formData, setFormData] = useState({
     name: '',
+    subtitle: '',
     price: '' as string | number,
     currency: 'USD',
     durationDays: '' as string | number,
     features: [] as SubscriptionFeature[],
+    keyFeatures: [] as SubscriptionFeature[],
     description: '',
     isPopular: false,
     status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE'
   });
 
   const [featureInput, setFeatureInput] = useState('');
+  const [keyFeatureInput, setKeyFeatureInput] = useState('');
+  const [keyFeatureStatus, setKeyFeatureStatus] = useState<'STANDARD' | 'POPULAR' | 'UNAVAILABLE' | 'SPECIAL'>('STANDARD');
 
   const formatWithCommas = (val: string | number) => {
     if (val === '' || val === undefined || val === null) return '';
@@ -281,15 +305,19 @@ const SubscriptionPlanManager: React.FC = () => {
   const resetForm = () => {
     setFormData({
       name: '',
+      subtitle: '',
       price: '',
       currency: 'USD',
       durationDays: '',
       features: [],
+      keyFeatures: [],
       description: '',
       isPopular: false,
       status: 'ACTIVE'
     });
     setFeatureInput('');
+    setKeyFeatureInput('');
+    setKeyFeatureStatus('STANDARD');
     setIsAdding(false);
     setEditingId(null);
   };
@@ -297,9 +325,10 @@ const SubscriptionPlanManager: React.FC = () => {
   const loadStarterTemplate = () => {
     setFormData({
       name: 'Starter Plan',
+      subtitle: 'Best for beginners',
       price: '25', // Default placeholder price
       currency: 'USD',
-      durationDays: '30', // Default placeholder duration
+      durationDays: '120', // User example duration
       description: 'Best for beginners starting their trading journey.',
       isPopular: false,
       status: 'ACTIVE',
@@ -317,10 +346,12 @@ const SubscriptionPlanManager: React.FC = () => {
         { text: 'Practice setup guide', isAvailable: true },
         { text: 'Weekly market update', isAvailable: true },
         { text: 'Private community access', isAvailable: true },
-        { text: 'Beginner signal support', isAvailable: true },
-        { text: 'Live Trading', isAvailable: false },
-        { text: 'Signals (Limited)', isAvailable: true },
-        { text: 'Basic Support', isAvailable: true }
+        { text: 'Beginner signal support', isAvailable: true }
+      ],
+      keyFeatures: [
+        { text: 'Live Trading: No', isAvailable: false, status: 'UNAVAILABLE' },
+        { text: 'Signals: Limited', isAvailable: true, status: 'POPULAR' },
+        { text: 'Support: Basic Support', isAvailable: true, status: 'STANDARD' }
       ]
     });
     setIsAdding(true);
@@ -332,13 +363,20 @@ const SubscriptionPlanManager: React.FC = () => {
     const normalizedFeatures = (p.features || []).map(f => 
       typeof f === 'string' ? { text: f, isAvailable: true } : f
     );
+    
+    // Handle optional fields
+    const normalizedKeyFeatures = (p.keyFeatures || []).map(f => 
+      typeof f === 'string' ? { text: f, isAvailable: true, status: 'STANDARD' as const } : f
+    );
 
     setFormData({
       name: p.name,
+      subtitle: p.subtitle || '',
       price: p.price.toString(),
       currency: p.currency,
       durationDays: p.durationDays.toString(),
       features: normalizedFeatures,
+      keyFeatures: normalizedKeyFeatures,
       description: p.description,
       isPopular: p.isPopular,
       status: p.status
@@ -351,9 +389,26 @@ const SubscriptionPlanManager: React.FC = () => {
     if (featureInput.trim()) {
       setFormData({ 
         ...formData, 
-        features: [...formData.features, { text: featureInput.trim(), isAvailable: true }] 
+        features: [...formData.features, { text: featureInput.trim(), isAvailable: true, status: 'STANDARD' }] 
       });
       setFeatureInput('');
+    }
+  };
+
+  const addKeyFeature = () => {
+    if (keyFeatureInput.trim()) {
+      setFormData({ 
+        ...formData, 
+        keyFeatures: [
+          ...formData.keyFeatures, 
+          { 
+            text: keyFeatureInput.trim(), 
+            isAvailable: keyFeatureStatus !== 'UNAVAILABLE',
+            status: keyFeatureStatus 
+          } 
+        ] 
+      });
+      setKeyFeatureInput('');
     }
   };
 
@@ -363,8 +418,23 @@ const SubscriptionPlanManager: React.FC = () => {
     setFormData({ ...formData, features: newFeatures });
   };
 
+  const toggleKeyFeatureAvailability = (idx: number) => {
+    const newKeyFeatures = [...formData.keyFeatures];
+    const newIsAvailable = !newKeyFeatures[idx].isAvailable;
+    newKeyFeatures[idx] = { 
+      ...newKeyFeatures[idx], 
+      isAvailable: newIsAvailable,
+      status: newIsAvailable ? 'STANDARD' : 'UNAVAILABLE'
+    };
+    setFormData({ ...formData, keyFeatures: newKeyFeatures });
+  };
+
   const removeFeature = (idx: number) => {
     setFormData({ ...formData, features: formData.features.filter((_, i) => i !== idx) });
+  };
+
+  const removeKeyFeature = (idx: number) => {
+    setFormData({ ...formData, keyFeatures: formData.keyFeatures.filter((_, i) => i !== idx) });
   };
 
   return (
@@ -493,6 +563,23 @@ const SubscriptionPlanManager: React.FC = () => {
                 </div>
               </div>
 
+              <div className="space-y-2.5 group">
+                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
+                  <Target size={14} className="text-accent/40 group-focus-within:text-accent" /> SUBTITLE
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
+                  <input 
+                    value={formData.subtitle}
+                    onChange={e => setFormData({...formData, subtitle: e.target.value})}
+                    className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase text-white" 
+                    style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                    placeholder="e.g. Best for beginners"
+                  />
+                  <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2.5 group">
                   <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
@@ -589,6 +676,64 @@ const SubscriptionPlanManager: React.FC = () => {
                       </button>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1">
+                  <Zap size={14} className="text-yellow-500" /> KEY_FEATURES
+                </label>
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-3">
+                    <input 
+                      value={keyFeatureInput}
+                      onChange={e => setKeyFeatureInput(e.target.value)}
+                      className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase text-white" 
+                      style={{ clipPath: 'polygon(0 0, 100% 0, 100% 10px, 100% 100%, 0 100%)' }}
+                      placeholder="e.g. Live Trading: No"
+                    />
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { id: 'STANDARD', label: 'BLUE', color: 'bg-accent' },
+                        { id: 'UNAVAILABLE', label: 'RED', color: 'bg-red-500' },
+                        { id: 'POPULAR', label: 'YELLOW', color: 'bg-yellow-500' },
+                        { id: 'SPECIAL', label: 'GREEN', color: 'bg-green-500' }
+                      ].map(s => (
+                        <button 
+                          key={s.id}
+                          type="button"
+                          onClick={() => setKeyFeatureStatus(s.id as any)}
+                          className={`py-2 text-[7px] font-heading font-black tracking-widest uppercase transition-all flex flex-col items-center gap-1 border ${keyFeatureStatus === s.id ? 'border-white/40 bg-white/10 text-white' : 'border-transparent text-muted/40 hover:text-muted'}`}
+                        >
+                          <div className={`w-2 h-2 rounded-full ${s.color}`}></div>
+                          <span>{s.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={addKeyFeature} className="w-full py-4 bg-white text-black font-heading text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] hover:bg-accent transition-all" style={{ clipPath: 'polygon(5% 0, 100% 0, 100% 70%, 95% 100%, 0 100%, 0 30%)' }}>ADD_KEY_FEATURE</button>
+                  </div>
+                  
+                  <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar">
+                    {(formData.keyFeatures || []).map((f, i) => (
+                      <div key={i} className="flex items-center justify-between p-2 sm:p-3 bg-white/5 border border-white/5">
+                        <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                           <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                             f.status === 'UNAVAILABLE' ? 'bg-red-500' : 
+                             f.status === 'POPULAR' ? 'bg-yellow-500' : 
+                             f.status === 'SPECIAL' ? 'bg-green-500' : 'bg-accent'
+                           }`}></div>
+                           <span className="text-[9px] font-heading text-white uppercase tracking-widest truncate">{f.text}</span>
+                        </div>
+                        <button 
+                          type="button"
+                          onClick={() => removeKeyFeature(i)} 
+                          className="p-2 text-error/40 hover:text-error transition-colors"
+                        >
+                          <Trash2 size={12}/>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
