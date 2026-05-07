@@ -80,17 +80,16 @@ const App: React.FC = () => {
   }, [initializePublicSettings]);
 
   useEffect(() => {
-    // Browser tab title will ONLY show SEO Title if provided.
-    // If empty, it will show default branding name or fallback.
-    const finalTitle = seoTitle || brandingName || 'EDU Lexonex';
-    document.title = finalTitle;
+    // Tab header strictly uses SEO Title. Fallback to branding name only if SEO Title is unset.
+    const tabTitle = seoTitle || brandingName || 'EDU Lexonex';
+    document.title = tabTitle;
 
-    // Update Open Graph and Twitter titles
+    // Sync titles for social sharing
     const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute('content', finalTitle);
+    if (ogTitle) ogTitle.setAttribute('content', tabTitle);
     
     const twitterTitle = document.querySelector('meta[name="twitter:title"]');
-    if (twitterTitle) twitterTitle.setAttribute('content', finalTitle);
+    if (twitterTitle) twitterTitle.setAttribute('content', tabTitle);
   }, [seoTitle, brandingName]);
 
   useEffect(() => {
