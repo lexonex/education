@@ -235,7 +235,7 @@ const SettingsPage: React.FC = () => {
                         type="text" 
                         value={newName} 
                         onChange={(e) => setNewName(e.target.value)} 
-                        className="w-full bg-white/[0.02] border border-white/10 p-4 sm:p-5 text-[11px] sm:text-[12px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300 uppercase" 
+                        className="w-full bg-white/[0.02] border border-white/10 p-4 sm:p-5 text-[11px] sm:text-[12px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" 
                         style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
                         placeholder="NAME" 
                       />
