@@ -36,7 +36,12 @@ import {
   MessageCircle,
   ExternalLink,
   CheckCircle,
-  XCircle
+  XCircle,
+  Facebook,
+  Youtube,
+  Instagram,
+  Send,
+  Music2
 } from 'lucide-react';
 import SubscriptionPlanSection from '../components/SubscriptionPlanSection';
 import AccountRegistrationSection from '../components/AccountRegistrationSection';
@@ -53,6 +58,7 @@ const LandingPage: React.FC = () => {
     whatsappNumber,
     tradingPlatforms,
     subscriptionPlans,
+    socialLinks,
     initializePublicSettings,
     trackPlatformClick
   } = useDataStore();
@@ -121,7 +127,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <Link to="/login">
-            <button className="px-4 py-1.5 sm:px-6 sm:py-2 border border-accent/30 bg-accent/5 text-accent font-heading text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-black hover:bg-accent hover:text-black transition-all active:scale-95" style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}>
+            <button className="px-4 py-1.5 sm:px-6 sm:py-2 border border-accent/30 bg-accent/5 text-accent font-heading text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-black hover:bg-accent hover:text-black transition-all active:scale-95" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}>
                LOGIN
             </button>
           </Link>
@@ -151,11 +157,11 @@ const LandingPage: React.FC = () => {
               </p>
               <div className="flex items-center justify-center gap-4 pt-8">
                  <Link to="/login">
-                    <button className="px-8 py-3 sm:px-12 sm:py-4 bg-accent text-black font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:shadow-glow transition-all flex items-center justify-center gap-3 active:scale-95" style={{ clipPath: 'polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)' }}>
+                    <button className="px-8 py-3 sm:px-12 sm:py-4 bg-accent text-black font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:shadow-glow transition-all flex items-center justify-center gap-3 active:scale-95" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}>
                        START <ArrowRight size={14} />
                     </button>
                  </Link>
-                 <button onClick={() => scrollToSection('account_open')} className="px-8 py-3 sm:px-12 sm:py-4 border border-white/10 text-white font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:bg-white/5 transition-all" style={{ clipPath: 'polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)' }}>
+                 <button onClick={() => scrollToSection('account_open')} className="px-8 py-3 sm:px-12 sm:py-4 border border-white/10 text-white font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:bg-white/5 transition-all" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}>
                     DETAILS
                  </button>
               </div>
@@ -265,6 +271,35 @@ const LandingPage: React.FC = () => {
                   {['Terms', 'Privacy', 'API'].map(item => (
                     <button key={item} className="text-[8px] font-heading text-muted/20 uppercase tracking-widest hover:text-accent transition-colors">{item}</button>
                   ))}
+               </div>
+
+               {/* SOCIAL MEDIA LINKS */}
+               <div className="flex items-center gap-3 sm:gap-4 order-first sm:order-none">
+                 {socialLinks.facebook && (
+                   <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="Facebook">
+                     <Facebook size={14} />
+                   </a>
+                 )}
+                 {socialLinks.telegram && (
+                   <a href={socialLinks.telegram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="Telegram">
+                     <Send size={14} />
+                   </a>
+                 )}
+                 {socialLinks.instagram && (
+                   <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="Instagram">
+                     <Instagram size={14} />
+                   </a>
+                 )}
+                 {socialLinks.youtube && (
+                   <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="YouTube">
+                     <Youtube size={14} />
+                   </a>
+                 )}
+                 {socialLinks.tiktok && (
+                   <a href={socialLinks.tiktok} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="TikTok">
+                     <Music2 size={14} />
+                   </a>
+                 )}
                </div>
             </div>
           </div>
