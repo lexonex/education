@@ -139,7 +139,7 @@ const firebaseConfig = {
   appId: "1:47491392874:web:b2d040ba976f17bebe7113"
 };
 
-const DEFAULT_BRANDING_NAME = 'EDU LEXONEX';
+const DEFAULT_BRANDING_NAME = 'EDU Lexonex';
 
 export const useDataStore = create<DataState>((set, get) => ({
   isInitialized: false,
