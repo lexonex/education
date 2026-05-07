@@ -181,51 +181,53 @@ const App: React.FC = () => {
       {/* Show GlobalLoader if either store says we are loading */}
       {(isLoading || isGlobalLoading) && <GlobalLoader />}
       
-      <Router>
-        {!isAuthenticated ? (
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        ) : (
-          <Layout>
+      {!isLoading && (
+        <Router>
+          {!isAuthenticated ? (
             <Routes>
-              {/* Shared Routes accessible by both roles */}
-              <Route path="/view/:id" element={<DocumentViewer />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/category/:categoryName" element={<PermissionViewPage />} />
-              
-              <Route path="/money-management" element={<MoneyManagementPage />} />
-              <Route path="/money-management-history" element={<MoneyManagementHistory />} />
-
-              {user?.role === UserRole.ADMIN ? (
-                <>
-                  <Route path="/dashboard" element={<AdminDashboard />} />
-                  <Route path="/users" element={<UserManagement />} />
-                  <Route path="/categories" element={<PermissionManager />} />
-                  <Route path="/documents" element={<DocumentManager />} />
-                  <Route path="/documents/new" element={<DocumentEditor />} />
-                  <Route path="/documents/edit/:id" element={<DocumentEditor />} />
-                  <Route path="/subscriptions" element={<SubscriptionManagementPage />} />
-                  <Route path="/registration" element={<RegistrationManager />} />
-                  <Route path="/resource-links" element={<AccountRegistrationManager />} />
-                  <Route path="/subscription-plans" element={<SubscriptionPlanManager />} />
-                  <Route path="/logs" element={<ActivityLogsPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </>
-              ) : (
-                <>
-                  <Route path="/dashboard" element={<StudentDashboard />} />
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </>
-              )}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </Layout>
-        )}
-      </Router>
+          ) : (
+            <Layout>
+              <Routes>
+                {/* Shared Routes accessible by both roles */}
+                <Route path="/view/:id" element={<DocumentViewer />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/category/:categoryName" element={<PermissionViewPage />} />
+                
+                <Route path="/money-management" element={<MoneyManagementPage />} />
+                <Route path="/money-management-history" element={<MoneyManagementHistory />} />
+  
+                {user?.role === UserRole.ADMIN ? (
+                  <>
+                    <Route path="/dashboard" element={<AdminDashboard />} />
+                    <Route path="/users" element={<UserManagement />} />
+                    <Route path="/categories" element={<PermissionManager />} />
+                    <Route path="/documents" element={<DocumentManager />} />
+                    <Route path="/documents/new" element={<DocumentEditor />} />
+                    <Route path="/documents/edit/:id" element={<DocumentEditor />} />
+                    <Route path="/subscriptions" element={<SubscriptionManagementPage />} />
+                    <Route path="/registration" element={<RegistrationManager />} />
+                    <Route path="/resource-links" element={<AccountRegistrationManager />} />
+                    <Route path="/subscription-plans" element={<SubscriptionPlanManager />} />
+                    <Route path="/logs" element={<ActivityLogsPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  </>
+                ) : (
+                  <>
+                    <Route path="/dashboard" element={<StudentDashboard />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  </>
+                )}
+              </Routes>
+            </Layout>
+          )}
+        </Router>
+      )}
     </>
   );
 };
