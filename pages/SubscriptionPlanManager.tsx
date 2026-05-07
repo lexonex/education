@@ -48,10 +48,12 @@ import { CSS } from '@dnd-kit/utilities';
 
 const SortablePlanItem = ({ 
   p, 
+  index,
   startEdit, 
   setDeleteTarget 
 }: { 
   p: SubscriptionPlan, 
+  index: number,
   startEdit: (p: SubscriptionPlan) => void, 
   setDeleteTarget: (id: string) => void 
 }) => {
@@ -83,76 +85,113 @@ const SortablePlanItem = ({
         <GripHorizontal size={14} />
       </div>
 
-      <div className={`relative flex-1 p-5 sm:p-8 bg-[#050505] border transition-all duration-500 flex flex-col ${p.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-white/30'}`} 
-           style={{ clipPath: 'polygon(0 20px, 20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
+      <div className={`relative flex-1 bg-[#050505] border transition-all duration-500 flex flex-col overflow-hidden ${p.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-white/30'}`} 
+           style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
         
-        {/* Corner Accents */}
-        
-        <div className="relative z-10 flex flex-col mb-2 min-h-[50px] sm:min-h-[60px]">
-          {p.isPopular && (
-            <div className="absolute -top-5 -right-5 sm:-top-6 sm:-right-6 bg-yellow-500 text-black px-6 sm:px-8 py-1 sm:py-1.5 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em]" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 15% 100%)' }}>RECOMMENDED</div>
-          )}
-          <h4 className={`font-heading text-xl sm:text-2xl font-black uppercase tracking-tighter mb-1 ${p.isPopular ? 'text-yellow-500' : 'text-white'}`}>{p.name}</h4>
-          {p.subtitle && (
-            <p className="text-[10px] text-accent/80 font-heading uppercase tracking-widest mb-1 italic">{p.subtitle}</p>
-          )}
-          <div className="flex items-center gap-2">
-            <Clock size={10} className="text-muted/40" />
-            <p className="text-[8px] sm:text-[9px] text-muted uppercase tracking-[0.2em] font-bold">{p.durationDays} DAYS DURATION</p>
+        {p.isPopular && (
+          <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em] z-30 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 10% 100%)' }}>RECOMMENDED</div>
+        )}
+
+        {/* Straight Edge Borders */}
+        <div className={`absolute top-0 left-[20px] right-0 h-[1px] transition-colors z-20 ${p.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
+        <div className={`absolute top-0 right-0 bottom-[20px] w-[1px] transition-colors z-20 ${p.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
+        <div className={`absolute bottom-0 right-[20px] left-0 h-[1px] transition-colors z-20 ${p.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
+        <div className={`absolute bottom-0 left-0 top-[20px] w-[1px] transition-colors z-20 ${p.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
+
+        <div className="px-4 py-6 sm:p-8 relative z-10 flex flex-col h-full">
+          {/* Index Number */}
+          <div className="absolute top-4 right-6 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black text-white/[0.02] group-hover:text-accent/[0.05] transition-colors leading-none select-none">
+            {(index + 1).toString().padStart(2, '0')}
           </div>
-        </div>
 
-        <div className="mb-4 sm:mb-6">
-          <div className="flex items-baseline gap-2">
-            <span className="text-4xl sm:text-6xl font-heading font-black text-white tracking-tighter">${p.price.toLocaleString('en-US')}</span>
-            <span className="text-[9px] sm:text-[11px] font-heading text-muted uppercase tracking-[0.3em] font-bold">/ {p.currency}</span>
-          </div>
-          <div className={`h-1 w-8 sm:w-12 mt-3 sm:mt-4 ${p.isPopular ? 'bg-yellow-500/40' : 'bg-white/10'}`}></div>
-        </div>
-
-        <p className="text-[9px] sm:text-[10px] text-muted/60 uppercase tracking-[0.12em] leading-relaxed min-h-[30px] sm:min-h-[40px] mb-6 sm:mb-8 line-clamp-3 sm:line-clamp-none">
-          {p.description || 'NO_DESCRIPTION_PROVIDED'}
-        </p>
-
-        <div className="space-y-3 sm:space-y-5 mb-10 sm:mb-16 flex-grow">
-          {(p.features || []).map((feat, i) => {
-            const f = typeof feat === 'string' ? { text: feat, isAvailable: true } : feat;
-            return (
-              <div key={i} className={`flex items-center gap-3 sm:gap-4 group/item ${!f.isAvailable ? 'opacity-60' : ''}`}>
-                <div className={`shrink-0 transition-transform group-hover/item:scale-125 ${!f.isAvailable ? 'text-red-500' : (p.isPopular ? 'text-yellow-500' : 'text-accent')}`}>
-                  {f.isAvailable ? <CheckCircle size={12} className="sm:size-[14px]" /> : <XCircle size={12} className="sm:size-[14px]" />}
-                </div>
-                <span className={`text-[9px] sm:text-[11px] uppercase tracking-widest leading-none transition-colors translate-y-[1px] ${f.isAvailable ? 'text-white/60 group-hover/item:text-white' : 'text-red-500/80 line-through'}`}>
-                  {f.text}
-                </span>
-              </div>
-            );
-          })}
-
-          {(p.keyFeatures && p.keyFeatures.length > 0) && (
-            <div className="pt-6 mt-6 border-t border-white/5 space-y-3">
-               <p className="text-[8px] font-heading text-muted uppercase tracking-[0.3em] font-bold mb-4 opacity-40">KEY_METADATA</p>
-               {p.keyFeatures.map((f, i) => {
-                 const statusColor = f.status === 'UNAVAILABLE' ? 'text-red-500' : 
-                                   f.status === 'POPULAR' ? 'text-yellow-500' : 
-                                   f.status === 'SPECIAL' ? 'text-green-500' : 'text-accent';
-                 return (
-                    <div key={i} className="flex items-center justify-between text-[9px] uppercase tracking-widest">
-                       <span className="text-white/40">{f.text.split(':')[0]}:</span>
-                       <span className={`font-bold ${statusColor}`}>{f.text.split(':')[1] || (f.isAvailable ? 'YES' : 'NO')}</span>
-                    </div>
-                 )
-               })}
+          <div className="relative z-10 flex flex-col mb-4 sm:mb-6">
+            <h4 className={`font-heading text-xl sm:text-2xl font-black uppercase tracking-tighter mb-1 ${p.isPopular ? 'text-yellow-500' : 'text-white'}`}>{p.name}</h4>
+            {p.subtitle && (
+              <p className="text-[10px] sm:text-[11px] text-accent/80 font-heading uppercase tracking-widest mb-2 italic">{p.subtitle}</p>
+            )}
+            <div className="flex items-center gap-2">
+              <Clock size={10} className="text-muted/40" />
+              <p className="text-[8px] sm:text-[9px] text-muted uppercase tracking-[0.2em] font-bold">{p.durationDays} DAYS DURATION</p>
             </div>
-          )}
-        </div>
+          </div>
 
-        <button 
-          className={`w-full py-4 sm:py-5 font-heading text-[9px] sm:text-[10px] font-black tracking-[0.5em] uppercase transition-all flex items-center justify-center gap-3 active:scale-95 ${p.isPopular ? 'bg-yellow-500 text-black hover:bg-yellow-400' : 'bg-accent text-black hover:bg-accent/80'}`} 
-          style={{ clipPath: 'polygon(12% 0, 100% 0, 100% 65%, 88% 100%, 0 100%, 0 35%)' }}
-        >
-          PURCHASE_PLAN <ArrowRight size={14} />
-        </button>
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl sm:text-5xl font-heading font-black text-white tracking-tighter">${(Number(p.price) || 0).toLocaleString('en-US')}</span>
+              <span className="text-[9px] sm:text-[10px] font-heading text-muted uppercase tracking-[0.3em] font-bold">/ {p.currency}</span>
+            </div>
+          </div>
+
+          <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 group/desc min-h-[80px]">
+             <div className="flex items-center gap-2">
+                <div className="h-px w-3 sm:w-4 bg-accent/30"></div>
+                <span className="text-[8px] sm:text-[9px] font-heading text-muted tracking-widest uppercase">Description</span>
+             </div>
+             <p className="w-full text-left text-[10px] sm:text-[11px] text-muted/90 group-hover/desc:text-white transition-colors uppercase tracking-[0.1em] sm:tracking-[0.12em] leading-relaxed font-medium line-clamp-3">
+                {p.description || 'Secure subscription plan for advanced market access.'}
+             </p>
+          </div>
+
+          <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 flex-grow overflow-y-auto custom-scrollbar min-h-[220px] max-h-[220px] -mx-2 px-2 scroll-smooth">
+            {(p.features || []).map((feat, fidx) => {
+              const feature = typeof feat === 'string' ? { text: feat, isAvailable: true } : feat;
+              return (
+                <div key={fidx} className={`flex items-center gap-3 sm:gap-4 group/item ${!feature.isAvailable ? 'opacity-60' : ''}`}>
+                  <div className={`shrink-0 transition-transform group-hover/item:scale-125 ${!feature.isAvailable ? 'text-red-500' : (p.isPopular ? 'text-yellow-500' : 'text-accent')}`}>
+                    {feature.isAvailable ? <CheckCircle size={14} className="sm:size-[16px]" /> : <XCircle size={14} className="sm:size-[16px]" />}
+                  </div>
+                  <span className={`text-[10px] sm:text-[11px] uppercase tracking-widest leading-none transition-colors translate-y-[1px] ${feature.isAvailable ? 'text-white/60 group-hover/item:text-white' : 'text-red-500/80 line-through'}`}>
+                    {feature.text}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-auto">
+            {(p.keyFeatures && p.keyFeatures.length > 0) ? (
+              <div className="mb-8 p-4 bg-white/[0.02] border border-white/5 space-y-4 min-h-[140px]">
+                <div className="flex items-center gap-2">
+                   <Zap size={12} className="text-yellow-500" />
+                   <span className="text-[8px] font-heading text-muted tracking-[0.2em] uppercase font-bold">Key Performance Indicators</span>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {p.keyFeatures.map((f, kfidx) => {
+                    const statusColor = f.status === 'UNAVAILABLE' ? 'text-red-500' : 
+                                      f.status === 'POPULAR' ? 'text-yellow-500' : 
+                                      f.status === 'SPECIAL' ? 'text-green-500' : 'text-accent';
+                    
+                    const parts = f.text.includes(':') ? f.text.split(':') : [f.text, f.isAvailable ? 'Yes' : 'No'];
+                    
+                    return (
+                      <div key={kfidx} className="flex items-center justify-between group/kf transition-all hover:bg-white/[0.02] -mx-1 px-1 py-0.5">
+                         <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-white/40 group-hover/kf:text-white transition-colors">{parts[0]}</span>
+                         <div className="flex items-center gap-2">
+                           <div className={`w-1 h-1 rounded-full animate-pulse ${statusColor.replace('text-', 'bg-')}`}></div>
+                           <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${statusColor}`}>
+                             {parts[1]}
+                           </span>
+                         </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="mb-8 min-h-[140px]"></div>
+            )}
+          </div>
+
+          <div className="">
+            <button 
+              disabled
+              className={`w-full py-4 sm:py-5 font-heading text-[10px] sm:text-[11px] font-black tracking-[0.4em] sm:tracking-[0.5em] uppercase transition-all flex items-center justify-center gap-3 active:scale-95 opacity-50 cursor-not-allowed ${p.isPopular ? 'bg-yellow-500 text-black shadow-glow-sm' : 'bg-white text-black'}`}
+              style={{ clipPath: 'polygon(0 0, 100% 0, 100% 65%, 88% 100%, 0 100%)' }}
+            >
+              PURCHASE_PREVIEW <ArrowRight size={14} className="sm:size-[16px]" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="mt-4 sm:mt-6 grid grid-cols-2 gap-3 sm:gap-4 px-1">
@@ -246,6 +285,13 @@ const SubscriptionPlanManager: React.FC = () => {
   const [featureInput, setFeatureInput] = useState('');
   const [keyFeatureInput, setKeyFeatureInput] = useState('');
   const [keyFeatureStatus, setKeyFeatureStatus] = useState<'STANDARD' | 'POPULAR' | 'UNAVAILABLE' | 'SPECIAL'>('STANDARD');
+  
+  const [editingFeatureIdx, setEditingFeatureIdx] = useState<number | null>(null);
+  const [editingFeatureText, setEditingFeatureText] = useState('');
+  
+  const [editingKeyFeatureIdx, setEditingKeyFeatureIdx] = useState<number | null>(null);
+  const [editingKeyFeatureText, setEditingKeyFeatureText] = useState('');
+  const [editingKeyFeatureStatus, setEditingKeyFeatureStatus] = useState<'STANDARD' | 'POPULAR' | 'UNAVAILABLE' | 'SPECIAL'>('STANDARD');
 
   const formatWithCommas = (val: string | number) => {
     if (val === '' || val === undefined || val === null) return '';
@@ -318,6 +364,10 @@ const SubscriptionPlanManager: React.FC = () => {
     setFeatureInput('');
     setKeyFeatureInput('');
     setKeyFeatureStatus('STANDARD');
+    setEditingFeatureIdx(null);
+    setEditingFeatureText('');
+    setEditingKeyFeatureIdx(null);
+    setEditingKeyFeatureText('');
     setIsAdding(false);
     setEditingId(null);
   };
@@ -435,6 +485,41 @@ const SubscriptionPlanManager: React.FC = () => {
 
   const removeKeyFeature = (idx: number) => {
     setFormData({ ...formData, keyFeatures: formData.keyFeatures.filter((_, i) => i !== idx) });
+  };
+
+  const startEditFeature = (idx: number, text: string) => {
+    setEditingFeatureIdx(idx);
+    setEditingFeatureText(text);
+  };
+
+  const saveFeatureEdit = (idx: number) => {
+    if (editingFeatureText.trim()) {
+      const newFeatures = [...formData.features];
+      newFeatures[idx] = { ...newFeatures[idx], text: editingFeatureText.trim() };
+      setFormData({ ...formData, features: newFeatures });
+      setEditingFeatureIdx(null);
+      setEditingFeatureText('');
+    }
+  };
+
+  const startEditKeyFeature = (idx: number, f: SubscriptionFeature) => {
+    setEditingKeyFeatureIdx(idx);
+    setEditingKeyFeatureText(f.text);
+    setEditingKeyFeatureStatus(f.status || 'STANDARD');
+  };
+
+  const saveKeyFeatureEdit = (idx: number) => {
+    if (editingKeyFeatureText.trim()) {
+      const newKeyFeatures = [...formData.keyFeatures];
+      newKeyFeatures[idx] = { 
+        ...newKeyFeatures[idx], 
+        text: editingKeyFeatureText.trim(),
+        status: editingKeyFeatureStatus 
+      };
+      setFormData({ ...formData, keyFeatures: newKeyFeatures });
+      setEditingKeyFeatureIdx(null);
+      setEditingKeyFeatureText('');
+    }
   };
 
   return (
@@ -655,25 +740,46 @@ const SubscriptionPlanManager: React.FC = () => {
                 </div>
                 <div className="space-y-2 mt-4 max-h-[250px] overflow-y-auto custom-scrollbar">
                   {formData.features.map((f, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 sm:p-3 bg-white/5 border border-white/5 group/feat">
-                      <div className="flex items-center gap-3 flex-1">
-                        <button 
-                          onClick={() => toggleFeatureAvailability(i)}
-                          className={`p-1.5 transition-all ${f.isAvailable ? 'text-accent bg-accent/10' : 'text-red-500 bg-red-500/10'}`}
-                          title={f.isAvailable ? 'Available' : 'Unavailable'}
-                        >
-                          {f.isAvailable ? <Check size={14} /> : <X size={14} />}
-                        </button>
-                        <span className={`text-[9px] font-heading uppercase tracking-widest leading-none translate-y-[1px] ${f.isAvailable ? 'text-white' : 'text-red-500/60 line-through'}`}>{f.text}</span>
-                      </div>
-                      <button 
-                        onClick={() => removeFeature(i)} 
-                        className="w-8 h-8 sm:w-10 sm:h-10 bg-error/5 border border-error/20 text-error/60 hover:bg-error hover:text-white hover:border-error transition-all flex items-center justify-center relative group" 
-                        title="Delete Feature" 
-                        style={{ clipPath: 'polygon(20% 0px, 100% 0px, 100% 80%, 80% 100%, 0px 100%, 0px 20%)' }}
-                      >
-                        <Trash2 size={14}/>
-                      </button>
+                    <div key={i} className="flex flex-col gap-2 p-2 sm:p-3 bg-white/5 border border-white/5 group/feat">
+                      {editingFeatureIdx === i ? (
+                        <div className="flex gap-2">
+                          <input 
+                            value={editingFeatureText}
+                            onChange={e => setEditingFeatureText(e.target.value)}
+                            className="flex-1 bg-black border border-accent/30 p-2 text-[10px] font-heading outline-none uppercase text-white"
+                            autoFocus
+                          />
+                          <button onClick={() => saveFeatureEdit(i)} className="p-2 text-accent hover:bg-accent/10 transition-colors"><Check size={14}/></button>
+                          <button onClick={() => setEditingFeatureIdx(null)} className="p-2 text-muted hover:bg-white/10 transition-colors"><X size={14}/></button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <button 
+                              onClick={() => toggleFeatureAvailability(i)}
+                              className={`p-1.5 transition-all ${f.isAvailable ? 'text-accent bg-accent/10' : 'text-red-500 bg-red-500/10'}`}
+                              title={f.isAvailable ? 'Available' : 'Unavailable'}
+                            >
+                              {f.isAvailable ? <Check size={14} /> : <X size={14} />}
+                            </button>
+                            <span className={`text-[9px] font-heading uppercase tracking-widest leading-none translate-y-[1px] ${f.isAvailable ? 'text-white' : 'text-red-500/60 line-through'}`}>{f.text}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button 
+                              onClick={() => startEditFeature(i, f.text)}
+                              className="p-2 text-muted/40 hover:text-accent transition-colors"
+                            >
+                              <Edit3 size={12}/>
+                            </button>
+                            <button 
+                              onClick={() => removeFeature(i)} 
+                              className="p-2 text-error/40 hover:text-error transition-colors"
+                            >
+                              <Trash2 size={12}/>
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -713,24 +819,68 @@ const SubscriptionPlanManager: React.FC = () => {
                     <button type="button" onClick={addKeyFeature} className="w-full py-4 bg-white text-black font-heading text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] hover:bg-accent transition-all" style={{ clipPath: 'polygon(5% 0, 100% 0, 100% 70%, 95% 100%, 0 100%, 0 30%)' }}>ADD_KEY_FEATURE</button>
                   </div>
                   
-                  <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar">
+                  <div className="space-y-2 max-h-[250px] overflow-y-auto custom-scrollbar">
                     {(formData.keyFeatures || []).map((f, i) => (
-                      <div key={i} className="flex items-center justify-between p-2 sm:p-3 bg-white/5 border border-white/5">
-                        <div className="flex items-center gap-3 flex-1 overflow-hidden">
-                           <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                             f.status === 'UNAVAILABLE' ? 'bg-red-500' : 
-                             f.status === 'POPULAR' ? 'bg-yellow-500' : 
-                             f.status === 'SPECIAL' ? 'bg-green-500' : 'bg-accent'
-                           }`}></div>
-                           <span className="text-[9px] font-heading text-white uppercase tracking-widest truncate">{f.text}</span>
-                        </div>
-                        <button 
-                          type="button"
-                          onClick={() => removeKeyFeature(i)} 
-                          className="p-2 text-error/40 hover:text-error transition-colors"
-                        >
-                          <Trash2 size={12}/>
-                        </button>
+                      <div key={i} className="flex flex-col gap-2 p-2 sm:p-3 bg-white/5 border border-white/5">
+                        {editingKeyFeatureIdx === i ? (
+                          <div className="space-y-3 p-1">
+                            <div className="flex gap-2">
+                              <input 
+                                value={editingKeyFeatureText}
+                                onChange={e => setEditingKeyFeatureText(e.target.value)}
+                                className="flex-1 bg-black border border-accent/30 p-2 text-[10px] font-heading outline-none uppercase text-white"
+                                autoFocus
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 gap-1">
+                              {[
+                                { id: 'STANDARD', color: 'bg-accent' },
+                                { id: 'UNAVAILABLE', color: 'bg-red-500' },
+                                { id: 'POPULAR', color: 'bg-yellow-500' },
+                                { id: 'SPECIAL', color: 'bg-green-500' }
+                              ].map(s => (
+                                <button 
+                                  key={s.id}
+                                  type="button"
+                                  onClick={() => setEditingKeyFeatureStatus(s.id as any)}
+                                  className={`h-6 border transition-all flex items-center justify-center ${editingKeyFeatureStatus === s.id ? 'border-white/40 bg-white/10' : 'border-transparent'}`}
+                                >
+                                  <div className={`w-2 h-2 rounded-full ${s.color}`}></div>
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex justify-end gap-2">
+                               <button onClick={() => setEditingKeyFeatureIdx(null)} className="px-3 py-1 text-[8px] font-heading uppercase text-muted hover:text-white transition-colors">CANCEL</button>
+                               <button onClick={() => saveKeyFeatureEdit(i)} className="px-3 py-1 text-[8px] font-heading uppercase bg-white text-black font-bold">SAVE</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                               <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                 f.status === 'UNAVAILABLE' ? 'bg-red-500' : 
+                                 f.status === 'POPULAR' ? 'bg-yellow-500' : 
+                                 f.status === 'SPECIAL' ? 'bg-green-500' : 'bg-accent'
+                               }`}></div>
+                               <span className="text-[9px] font-heading text-white uppercase tracking-widest truncate">{f.text}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button 
+                                onClick={() => startEditKeyFeature(i, f)}
+                                className="p-2 text-muted/40 hover:text-accent transition-colors"
+                              >
+                                <Edit3 size={12}/>
+                              </button>
+                              <button 
+                                type="button"
+                                onClick={() => removeKeyFeature(i)} 
+                                className="p-2 text-error/40 hover:text-error transition-colors"
+                              >
+                                <Trash2 size={12}/>
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -793,10 +943,11 @@ const SubscriptionPlanManager: React.FC = () => {
           strategy={verticalListSortingStrategy}
         >
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-            {localPlans.map(p => (
+            {localPlans.map((p, index) => (
               <SortablePlanItem 
                 key={p.id} 
                 p={p} 
+                index={index}
                 startEdit={startEdit} 
                 setDeleteTarget={setDeleteTarget} 
               />
