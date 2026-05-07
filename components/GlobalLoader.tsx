@@ -1,15 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useUIStore } from '../store/uiStore';
+import { useAuthStore } from '../store/authStore';
 import { Terminal } from 'lucide-react';
 import CyberBackground from './CyberBackground';
 
 const GlobalLoader: React.FC = () => {
   const { isGlobalLoading } = useUIStore();
+  const { isLoading: isAuthLoading } = useAuthStore();
   const [percent, setPercent] = useState(0);
 
+  const isActive = isGlobalLoading || isAuthLoading;
+
   useEffect(() => {
-    if (isGlobalLoading) {
+    if (isActive) {
       const interval = setInterval(() => {
         setPercent(prev => (prev < 99 ? prev + Math.floor(Math.random() * 8) : 99));
       }, 150);
@@ -17,9 +21,9 @@ const GlobalLoader: React.FC = () => {
     } else {
       setPercent(0);
     }
-  }, [isGlobalLoading]);
+  }, [isActive]);
 
-  if (!isGlobalLoading) return null;
+  if (!isActive) return null;
 
   return (
     <div className="fixed inset-0 z-[20000] flex flex-col items-center justify-center overflow-hidden select-none font-mono">
