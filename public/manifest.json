@@ -1,7 +1,7 @@
 {
-  "name": "EDU LEXONEX",
-  "short_name": "LEXONEX",
-  "description": "Neural Learning Platform by EDU LEXONEX",
+  "name": "EDU Lexonex",
+  "short_name": "Lexonex",
+  "description": "Professional binary trading academy and smart money management system.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
