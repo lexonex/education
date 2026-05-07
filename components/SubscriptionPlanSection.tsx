@@ -69,17 +69,17 @@ const SubscriptionPlanSection: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-10 group/desc">
+                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 group/desc min-h-[80px]">
                    <div className="flex items-center gap-2">
                       <div className="h-px w-3 sm:w-4 bg-accent/30"></div>
                       <span className="text-[8px] sm:text-[9px] font-heading text-muted tracking-widest uppercase">Description</span>
                    </div>
-                   <p className="w-full text-left text-[10px] sm:text-[11px] text-muted/90 group-hover/desc:text-white transition-colors uppercase tracking-[0.1em] sm:tracking-[0.12em] leading-relaxed font-medium">
+                   <p className="w-full text-left text-[10px] sm:text-[11px] text-muted/90 group-hover/desc:text-white transition-colors uppercase tracking-[0.1em] sm:tracking-[0.12em] leading-relaxed font-medium line-clamp-3">
                       {plan.description || 'Secure subscription plan for advanced market access.'}
                    </p>
                 </div>
 
-                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-10 flex-grow overflow-y-auto custom-scrollbar max-h-[280px] -mx-2 px-2 scroll-smooth">
+                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 flex-grow overflow-y-auto custom-scrollbar min-h-[220px] max-h-[220px] -mx-2 px-2 scroll-smooth">
                   {(plan.features || []).map((feat, fidx) => {
                     const feature = typeof feat === 'string' ? { text: feat, isAvailable: true } : feat;
                     return (
@@ -96,35 +96,39 @@ const SubscriptionPlanSection: React.FC = () => {
                 </div>
 
                 {/* Key Features Bottom Section */}
-                {(plan.keyFeatures && plan.keyFeatures.length > 0) && (
-                  <div className="mb-8 p-4 bg-white/[0.02] border border-white/5 space-y-4">
-                    <div className="flex items-center gap-2">
-                       <Zap size={12} className="text-yellow-500" />
-                       <span className="text-[8px] font-heading text-muted tracking-[0.2em] uppercase font-bold">Key Performance Indicators</span>
+                <div className="mt-auto">
+                  {(plan.keyFeatures && plan.keyFeatures.length > 0) ? (
+                    <div className="mb-8 p-4 bg-white/[0.02] border border-white/5 space-y-4 min-h-[140px]">
+                      <div className="flex items-center gap-2">
+                         <Zap size={12} className="text-yellow-500" />
+                         <span className="text-[8px] font-heading text-muted tracking-[0.2em] uppercase font-bold">Key Performance Indicators</span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3">
+                        {plan.keyFeatures.map((f, kfidx) => {
+                          const statusColor = f.status === 'UNAVAILABLE' ? 'text-red-500' : 
+                                            f.status === 'POPULAR' ? 'text-yellow-500' : 
+                                            f.status === 'SPECIAL' ? 'text-green-500' : 'text-accent';
+                          
+                          const parts = f.text.includes(':') ? f.text.split(':') : [f.text, f.isAvailable ? 'Yes' : 'No'];
+                          
+                          return (
+                            <div key={kfidx} className="flex items-center justify-between group/kf transition-all hover:bg-white/[0.02] -mx-1 px-1 py-0.5">
+                               <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-white/40 group-hover/kf:text-white transition-colors">{parts[0]}</span>
+                               <div className="flex items-center gap-2">
+                                 <div className={`w-1 h-1 rounded-full animate-pulse ${statusColor.replace('text-', 'bg-')}`}></div>
+                                 <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${statusColor}`}>
+                                   {parts[1]}
+                                 </span>
+                               </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 gap-3">
-                      {plan.keyFeatures.map((f, kfidx) => {
-                        const statusColor = f.status === 'UNAVAILABLE' ? 'text-red-500' : 
-                                          f.status === 'POPULAR' ? 'text-yellow-500' : 
-                                          f.status === 'SPECIAL' ? 'text-green-500' : 'text-accent';
-                        
-                        const parts = f.text.includes(':') ? f.text.split(':') : [f.text, f.isAvailable ? 'Yes' : 'No'];
-                        
-                        return (
-                          <div key={kfidx} className="flex items-center justify-between group/kf transition-all hover:bg-white/[0.02] -mx-1 px-1 py-0.5">
-                             <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-white/40 group-hover/kf:text-white transition-colors">{parts[0]}</span>
-                             <div className="flex items-center gap-2">
-                               <div className={`w-1 h-1 rounded-full animate-pulse ${statusColor.replace('text-', 'bg-')}`}></div>
-                               <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${statusColor}`}>
-                                 {parts[1]}
-                               </span>
-                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="mb-8 min-h-[140px]"></div>
+                  )}
+                </div>
 
                 <div className="">
                   <Link to="/login" className="w-full">
