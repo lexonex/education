@@ -356,7 +356,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 />
               </div>
               <div className={`transition-all duration-300 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 h-0' : 'w-auto opacity-100'}`}>
-                <h1 className="font-heading font-black text-lg uppercase text-white tracking-tighter truncate leading-none">
+                <h1 className="font-heading font-black text-lg text-white tracking-tighter truncate leading-none">
                   {brandingName}
                 </h1>
                 <p className="text-[7px] font-heading tracking-[0.5em] text-accent/40 uppercase font-bold mt-1.5 block leading-none">SYSTEM_V5.0</p>
