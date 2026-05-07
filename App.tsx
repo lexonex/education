@@ -81,7 +81,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Browser tab title will ONLY show SEO Title if provided.
-    // If empty, it will show default.
+    // If empty, it will show default branding name or fallback.
     const finalTitle = seoTitle || brandingName || 'EDU Lexonex';
     document.title = finalTitle;
 
