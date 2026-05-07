@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { useDataStore } from './store/dataStore';
+import { useUIStore } from './store/uiStore';
 import { UserRole } from './types';
 import { isPermissionActive } from './lib/utils';
 
@@ -38,6 +39,19 @@ import MoneyManagementHistory from './pages/MoneyManagementHistory';
 const App: React.FC = () => {
   const { isAuthenticated, user, isLoading } = useAuthStore();
   const { brandingName, faviconURL, seoTitle, seoDescription, seoKeywords, initializePublicSettings, updateLastActive } = useDataStore();
+  const { isGlobalLoading, setGlobalLoading } = useUIStore();
+
+  useEffect(() => {
+    // Failsafe: Ensure loader is removed after 10 seconds if stuck
+    const failsafe = setTimeout(() => {
+      if (isLoading) {
+        console.warn("Auth sync taking too long, forcing loader clear.");
+        useAuthStore.setState({ isLoading: false });
+      }
+      setGlobalLoading(false);
+    }, 10000);
+    return () => clearTimeout(failsafe);
+  }, [isLoading, setGlobalLoading]);
 
   useEffect(() => {
     if (isAuthenticated && user?.uid) {
@@ -67,9 +81,17 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Browser tab title will ONLY show SEO Title if provided.
-    // If empty, it will show nothing (browser defaults to URL).
-    document.title = seoTitle || '';
-  }, [seoTitle]);
+    // If empty, it will show default.
+    const finalTitle = seoTitle || brandingName || 'EDU Lexonex';
+    document.title = finalTitle;
+
+    // Update Open Graph and Twitter titles
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', finalTitle);
+    
+    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twitterTitle) twitterTitle.setAttribute('content', finalTitle);
+  }, [seoTitle, brandingName]);
 
   useEffect(() => {
     let metaDesc = document.querySelector('meta[name="description"]');
@@ -79,11 +101,15 @@ const App: React.FC = () => {
       document.getElementsByTagName('head')[0].appendChild(metaDesc);
     }
     
-    if (seoDescription) {
-      metaDesc.setAttribute('content', seoDescription);
-    } else {
-      metaDesc.setAttribute('content', 'Pioneering dynamic multi-tenant education management through neural grid technologies.');
-    }
+    const finalDesc = seoDescription || 'EDU Lexonex is a professional binary trading academy offering advanced trading courses, live trading sessions, VIP signals, and a powerful smart money management system.';
+    metaDesc.setAttribute('content', finalDesc);
+
+    // Social Fallbacks
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', finalDesc);
+    
+    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+    if (twitterDesc) twitterDesc.setAttribute('content', finalDesc);
   }, [seoDescription]);
 
   useEffect(() => {
@@ -94,11 +120,8 @@ const App: React.FC = () => {
       document.getElementsByTagName('head')[0].appendChild(metaKeywords);
     }
     
-    if (seoKeywords) {
-      metaKeywords.setAttribute('content', seoKeywords);
-    } else {
-      metaKeywords.setAttribute('content', 'education, management, grid, learning');
-    }
+    const finalKeywords = seoKeywords || 'EDU Lexonex, binary trading academy, binary trading course, live trading sessions, VIP trading signals, smart money management';
+    metaKeywords.setAttribute('content', finalKeywords);
   }, [seoKeywords]);
 
   useEffect(() => {
@@ -134,6 +157,12 @@ const App: React.FC = () => {
         document.getElementsByTagName('head')[0].appendChild(shortcutLink);
       }
       shortcutLink.href = url;
+
+      // Update Social Images
+      const ogImage = document.querySelector('meta[property="og:image"]');
+      if (ogImage) ogImage.setAttribute('content', url);
+      const twitterImage = document.querySelector('meta[name="twitter:image"]');
+      if (twitterImage) twitterImage.setAttribute('content', url);
     };
 
     if (faviconURL) {
@@ -144,15 +173,13 @@ const App: React.FC = () => {
     }
   }, [faviconURL]);
 
-  if (isLoading) {
-    return <GlobalLoader />;
-  }
-
   return (
     <>
       <CyberBackground />
       <HUDNotification />
-      <GlobalLoader />
+      {/* Show GlobalLoader if either store says we are loading */}
+      {(isLoading || isGlobalLoading) && <GlobalLoader />}
+      
       <Router>
         {!isAuthenticated ? (
           <Routes>
@@ -168,26 +195,9 @@ const App: React.FC = () => {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/category/:categoryName" element={<PermissionViewPage />} />
-
-              {/* Analytics Routes */}
-              {(user?.role === UserRole.ADMIN || 
-                user?.permissions?.allAccess || 
-                (user?.permissions?.canAccessAnalytics && isPermissionActive(user?.permissions?.analytics))
-              ) && (
-                <>
-                  {/* Any analytics specific routes would go here if needed */}
-                </>
-              )}
-
-              {(user?.role === UserRole.ADMIN || 
-                user?.permissions?.allAccess || 
-                (user?.permissions?.canAccessMoneyManagement && isPermissionActive(user?.permissions?.moneyManagement))
-              ) && (
-                <>
-                  <Route path="/money-management" element={<MoneyManagementPage />} />
-                  <Route path="/money-management-history" element={<MoneyManagementHistory />} />
-                </>
-              )}
+              
+              <Route path="/money-management" element={<MoneyManagementPage />} />
+              <Route path="/money-management-history" element={<MoneyManagementHistory />} />
 
               {user?.role === UserRole.ADMIN ? (
                 <>
