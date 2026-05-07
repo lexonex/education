@@ -57,6 +57,14 @@ interface DataState {
   seoDescription: string;
   seoKeywords: string;
   
+  socialLinks: {
+    facebook: string;
+    telegram: string;
+    instagram: string;
+    youtube: string;
+    tiktok: string;
+  };
+  
   initializePublicSettings: () => void;
   initializeListeners: (adminId: string, role: UserRole, userId?: string) => void;
   cleanupListeners: () => void;
@@ -112,6 +120,11 @@ interface AdminContactSettings {
   ownerAddress: string;
   whatsappNumber: string;
   officeHours: string;
+  facebook?: string;
+  telegram?: string;
+  instagram?: string;
+  youtube?: string;
+  tiktok?: string;
 }
 
 let unsubscribers: (() => void)[] = [];
@@ -153,6 +166,13 @@ export const useDataStore = create<DataState>((set, get) => ({
   seoTitle: '',
   seoDescription: '',
   seoKeywords: '',
+  socialLinks: {
+    facebook: '',
+    telegram: '',
+    instagram: '',
+    youtube: '',
+    tiktok: ''
+  },
 
   initializePublicSettings: () => {
     if (publicUnsub) return;
@@ -175,6 +195,13 @@ export const useDataStore = create<DataState>((set, get) => ({
           seoTitle: data.seoTitle || '',
           seoDescription: data.seoDescription || '',
           seoKeywords: data.seoKeywords || '',
+          socialLinks: {
+            facebook: data.social_facebook || '',
+            telegram: data.social_telegram || '',
+            instagram: data.social_instagram || '',
+            youtube: data.social_youtube || '',
+            tiktok: data.social_tiktok || ''
+          },
           isInitialized: true
         });
       } else {
@@ -222,7 +249,14 @@ export const useDataStore = create<DataState>((set, get) => ({
             faviconURL: data.faviconURL || '',
             seoTitle: data.seoTitle || '',
             seoDescription: data.seoDescription || '',
-            seoKeywords: data.seoKeywords || ''
+            seoKeywords: data.seoKeywords || '',
+            socialLinks: {
+              facebook: data.social_facebook || '',
+              telegram: data.social_telegram || '',
+              instagram: data.social_instagram || '',
+              youtube: data.social_youtube || '',
+              tiktok: data.social_tiktok || ''
+            }
           });
         }
       }, (err) => console.warn("Admin profile fetch restricted:", err.message));
@@ -357,6 +391,11 @@ export const useDataStore = create<DataState>((set, get) => ({
       seoTitle,
       seoDescription,
       seoKeywords,
+      social_facebook: settings.facebook || '',
+      social_telegram: settings.telegram || '',
+      social_instagram: settings.instagram || '',
+      social_youtube: settings.youtube || '',
+      social_tiktok: settings.tiktok || '',
       ...settings
     };
 
@@ -372,6 +411,13 @@ export const useDataStore = create<DataState>((set, get) => ({
       seoTitle, 
       seoDescription, 
       seoKeywords, 
+      socialLinks: {
+        facebook: settings.facebook || '',
+        telegram: settings.telegram || '',
+        instagram: settings.instagram || '',
+        youtube: settings.youtube || '',
+        tiktok: settings.tiktok || ''
+      },
       ...settings 
     });
   },
