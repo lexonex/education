@@ -113,7 +113,7 @@ const LandingPage: React.FC = () => {
       <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#050505]/40 backdrop-blur-xl">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-10 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center">
-            <span className="font-heading font-black text-sm sm:text-base tracking-tighter uppercase">
+            <span className="font-heading font-black text-sm sm:text-base tracking-tighter">
               {glitchText}
             </span>
           </div>
@@ -209,7 +209,7 @@ const LandingPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-16 sm:mb-20">
               <div className="space-y-5 sm:space-y-6">
                 <div className="flex items-center">
-                  <h3 className="font-heading font-black text-lg sm:text-xl tracking-tighter uppercase text-white">{brandingName}</h3>
+                  <h3 className="font-heading font-black text-lg sm:text-xl tracking-tighter text-white">{brandingName}</h3>
                 </div>
                 <p className="text-[9px] text-muted uppercase tracking-widest leading-loose font-medium">
                   Pioneering dynamic multi-tenant education management through neural grid technologies. Deployed globally.
@@ -263,7 +263,7 @@ const LandingPage: React.FC = () => {
             
             <div className="pt-8 sm:pt-10 border-t border-white/5 flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
                <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6 lg:gap-8">
-                  <p className="text-[8px] font-heading text-muted/40 uppercase tracking-[0.3em] sm:tracking-[0.5em] text-center">© 2025 {brandingName}_GRID</p>
+                  <p className="text-[8px] font-heading text-muted/40 uppercase tracking-[0.3em] sm:tracking-[0.5em] text-center">© 2025 {brandingName}</p>
                   <div className="hidden sm:block h-px w-6 bg-white/10"></div>
                   <p className="text-[8px] font-heading text-accent/30 uppercase tracking-[0.3em] sm:tracking-[0.5em] text-center">ENCRYPTED</p>
                </div>
