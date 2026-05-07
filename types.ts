@@ -88,7 +88,6 @@ export interface TradingPlatform {
   clicksToday: number;
   lastClickAt?: string;
   status: 'ACTIVE' | 'INACTIVE';
-  isPopular: boolean;
   adminId: string;
   createdAt: string;
   order: number;
@@ -208,15 +207,18 @@ export interface ResourceLink {
 export interface SubscriptionFeature {
   text: string;
   isAvailable: boolean;
+  status?: 'STANDARD' | 'POPULAR' | 'UNAVAILABLE' | 'SPECIAL';
 }
 
 export interface SubscriptionPlan {
   id: string;
   name: string;
+  subtitle?: string;
   price: number;
   currency: string;
   durationDays: number;
   features: SubscriptionFeature[];
+  keyFeatures?: SubscriptionFeature[];
   description: string;
   isPopular: boolean;
   status: 'ACTIVE' | 'INACTIVE';
