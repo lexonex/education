@@ -92,12 +92,6 @@ const SortablePlanItem = ({
           <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em] z-30 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 10% 100%)' }}>RECOMMENDED</div>
         )}
 
-        {/* Straight Edge Borders */}
-        <div className={`absolute top-0 left-[20px] right-0 h-[1px] transition-colors z-20 ${p.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
-        <div className={`absolute top-0 right-0 bottom-[20px] w-[1px] transition-colors z-20 ${p.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
-        <div className={`absolute bottom-0 right-[20px] left-0 h-[1px] transition-colors z-20 ${p.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
-        <div className={`absolute bottom-0 left-0 top-[20px] w-[1px] transition-colors z-20 ${p.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
-
         <div className="px-4 py-6 sm:p-8 relative z-10 flex flex-col h-full">
           {/* Index Number */}
           <div className="absolute top-4 right-6 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black text-white/[0.02] group-hover:text-accent/[0.05] transition-colors leading-none select-none">
