@@ -32,27 +32,30 @@ const SubscriptionPlanSection: React.FC = () => {
           <div key={i} className={`group relative flex flex-col ${plan.isPopular ? 'z-10' : ''}`}>
             
             {/* Main Card Container with Clip Path */}
-            <div className={`relative flex-1 bg-[#050505] border-[0.5px] transition-all duration-500 flex flex-col overflow-hidden ${plan.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-white/30'}`} 
+            <div className={`relative flex-1 bg-[#050505] border transition-all duration-500 flex flex-col overflow-hidden ${plan.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-white/30'}`} 
                  style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
               
               {plan.isPopular && (
-                <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em] z-30 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 10% 100%)' }}>POPULAR</div>
+                <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em] z-30 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 10% 100%)' }}>RECOMMENDED</div>
               )}
 
-
+              {/* Straight Edge Borders */}
+              <div className={`absolute top-0 left-[20px] right-0 h-[1px] transition-colors z-20 ${plan.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
+              <div className={`absolute top-0 right-0 bottom-[20px] w-[1px] transition-colors z-20 ${plan.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
+              <div className={`absolute bottom-0 right-[20px] left-0 h-[1px] transition-colors z-20 ${plan.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
+              <div className={`absolute bottom-0 left-0 top-[20px] w-[1px] transition-colors z-20 ${plan.isPopular ? 'bg-yellow-500/20 group-hover:bg-yellow-500/40' : 'bg-white/10 group-hover:bg-white/20'}`}></div>
 
               <div className="px-4 py-6 sm:p-8 relative z-10 flex flex-col h-full">
                 {/* Index Number */}
-                <div className={`absolute top-4 right-6 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black transition-colors leading-none select-none ${
-                  plan.isPopular 
-                    ? 'text-yellow-500/[0.02] group-hover:text-yellow-500/[0.05]' 
-                    : 'text-white/[0.02] group-hover:text-accent/[0.05]'
-                }`}>
+                <div className="absolute top-4 right-6 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black text-white/[0.02] group-hover:text-accent/[0.05] transition-colors leading-none select-none">
                   {(i + 1).toString().padStart(2, '0')}
                 </div>
 
                 <div className="relative z-10 flex flex-col mb-4 sm:mb-6">
                   <h4 className={`font-heading text-xl sm:text-2xl font-black uppercase tracking-tighter mb-1 ${plan.isPopular ? 'text-yellow-500' : 'text-white'}`}>{plan.name}</h4>
+                  {plan.subtitle && (
+                    <p className="text-[10px] sm:text-[11px] text-accent/80 font-heading uppercase tracking-widest mb-2 italic">{plan.subtitle}</p>
+                  )}
                   <div className="flex items-center gap-2">
                     <Clock size={10} className="text-muted/40" />
                     <p className="text-[8px] sm:text-[9px] text-muted uppercase tracking-[0.2em] font-bold">{plan.durationDays} DAYS DURATION</p>
@@ -61,14 +64,14 @@ const SubscriptionPlanSection: React.FC = () => {
 
                 <div className="mb-6 sm:mb-8">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl sm:text-5xl font-heading font-black text-white tracking-tighter">${plan.price.toLocaleString('en-US')}</span>
+                    <span className="text-4xl sm:text-5xl font-heading font-black text-white tracking-tighter">${(Number(plan.price) || 0).toLocaleString('en-US')}</span>
                     <span className="text-[9px] sm:text-[10px] font-heading text-muted uppercase tracking-[0.3em] font-bold">/ {plan.currency}</span>
                   </div>
                 </div>
 
-                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-10 flex-grow group/desc">
+                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-10 group/desc">
                    <div className="flex items-center gap-2">
-                      <div className={`h-px w-3 sm:w-4 ${plan.isPopular ? 'bg-yellow-500/30' : 'bg-accent/30'}`}></div>
+                      <div className="h-px w-3 sm:w-4 bg-accent/30"></div>
                       <span className="text-[8px] sm:text-[9px] font-heading text-muted tracking-widest uppercase">Description</span>
                    </div>
                    <p className="w-full text-left text-[10px] sm:text-[11px] text-muted/90 group-hover/desc:text-white transition-colors uppercase tracking-[0.1em] sm:tracking-[0.12em] leading-relaxed font-medium">
@@ -76,7 +79,7 @@ const SubscriptionPlanSection: React.FC = () => {
                    </p>
                 </div>
 
-                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-10">
+                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-10 flex-grow overflow-y-auto custom-scrollbar max-h-[280px] -mx-2 px-2 scroll-smooth">
                   {(plan.features || []).map((feat, fidx) => {
                     const feature = typeof feat === 'string' ? { text: feat, isAvailable: true } : feat;
                     return (
@@ -92,13 +95,44 @@ const SubscriptionPlanSection: React.FC = () => {
                   })}
                 </div>
 
+                {/* Key Features Bottom Section */}
+                {(plan.keyFeatures && plan.keyFeatures.length > 0) && (
+                  <div className="mb-8 p-4 bg-white/[0.02] border border-white/5 space-y-4">
+                    <div className="flex items-center gap-2">
+                       <Zap size={12} className="text-yellow-500" />
+                       <span className="text-[8px] font-heading text-muted tracking-[0.2em] uppercase font-bold">Key Performance Indicators</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      {plan.keyFeatures.map((f, kfidx) => {
+                        const statusColor = f.status === 'UNAVAILABLE' ? 'text-red-500' : 
+                                          f.status === 'POPULAR' ? 'text-yellow-500' : 
+                                          f.status === 'SPECIAL' ? 'text-green-500' : 'text-accent';
+                        
+                        const parts = f.text.includes(':') ? f.text.split(':') : [f.text, f.isAvailable ? 'Yes' : 'No'];
+                        
+                        return (
+                          <div key={kfidx} className="flex items-center justify-between group/kf transition-all hover:bg-white/[0.02] -mx-1 px-1 py-0.5">
+                             <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-white/40 group-hover/kf:text-white transition-colors">{parts[0]}</span>
+                             <div className="flex items-center gap-2">
+                               <div className={`w-1 h-1 rounded-full animate-pulse ${statusColor.replace('text-', 'bg-')}`}></div>
+                               <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${statusColor}`}>
+                                 {parts[1]}
+                               </span>
+                             </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className="">
                   <Link to="/login" className="w-full">
                     <button 
-                      className={`group/btn relative w-full py-4 sm:py-5 border font-heading text-[10px] sm:text-[11px] font-black tracking-[0.4em] sm:tracking-[0.5em] uppercase overflow-hidden transition-all active:scale-[0.98] flex items-center justify-center gap-3 square-button ${plan.isPopular ? 'bg-yellow-500/5 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-black' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent hover:text-black'}`}
+                      className={`w-full py-4 sm:py-5 font-heading text-[10px] sm:text-[11px] font-black tracking-[0.4em] sm:tracking-[0.5em] uppercase transition-all flex items-center justify-center gap-3 active:scale-95 ${plan.isPopular ? 'bg-yellow-500 text-black hover:bg-yellow-400 shadow-glow-sm' : 'bg-white text-black hover:bg-accent'}`}
+                      style={{ clipPath: 'polygon(0 0, 100% 0, 100% 65%, 88% 100%, 0 100%)' }}
                     >
-                      <span className="relative z-10">GET_STARTED</span>
-                      <ArrowRight size={14} className="sm:size-[16px] relative z-10 group-hover/btn:translate-x-1 transition-transform" />
+                      GET STARTED <ArrowRight size={14} className="sm:size-[16px]" />
                     </button>
                   </Link>
                 </div>
