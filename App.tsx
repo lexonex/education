@@ -80,17 +80,19 @@ const App: React.FC = () => {
   }, [initializePublicSettings]);
 
   useEffect(() => {
-    // Tab header strictly uses SEO Title. Fallback to branding name only if SEO Title is unset.
-    const tabTitle = seoTitle || brandingName || 'EDU Lexonex';
-    document.title = tabTitle;
+    // Only update tab title if a custom SEO Title is loaded from database.
+    // If empty (during initial load), it stays with the hardcoded title in index.html.
+    if (seoTitle) {
+      document.title = seoTitle;
 
-    // Sync titles for social sharing
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute('content', tabTitle);
-    
-    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
-    if (twitterTitle) twitterTitle.setAttribute('content', tabTitle);
-  }, [seoTitle, brandingName]);
+      // Sync titles for social sharing
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.setAttribute('content', seoTitle);
+      
+      const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      if (twitterTitle) twitterTitle.setAttribute('content', seoTitle);
+    }
+  }, [seoTitle]);
 
   useEffect(() => {
     let metaDesc = document.querySelector('meta[name="description"]');
