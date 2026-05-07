@@ -284,6 +284,13 @@ const LoginPage: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isAuthenticating) return;
+
+    // Check if photo exists
+    if (!regData.photoURL) {
+      addNotification('ERROR', 'REQUIRED', 'Profile picture must be uploaded.');
+      return;
+    }
+
     setIsAuthenticating(true);
     setGlobalLoading(true);
     
@@ -381,12 +388,27 @@ const LoginPage: React.FC = () => {
 
   return (
     <div ref={scrollRef} className="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-y-auto font-body text-white selection:bg-accent selection:text-black">
-      
-      {/* Back to Home Button */}
-      <Link to="/" className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-black/50 border border-white/10 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest hover:text-white hover:border-white/30 transition-all backdrop-blur-sm" style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}>
-        <ChevronLeft size={14} /> HOME
-      </Link>
+      {/* Home Navigation */}
+      <div className="fixed top-6 left-6 z-20 hidden sm:block">
+        <Link 
+          to="/" 
+          className="flex items-center gap-2 px-4 py-2 bg-[#050505] border border-white/10 text-muted/60 hover:text-accent hover:border-accent/40 text-[10px] font-heading font-black tracking-[0.2em] uppercase transition-all shadow-xl group"
+          style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}
+        >
+          <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Home
+        </Link>
+      </div>
 
+      {/* Mobile Home Navigation */}
+      <div className="fixed top-4 left-4 z-20 sm:hidden">
+        <Link 
+          to="/" 
+          className="flex items-center justify-center w-10 h-10 bg-[#050505] border border-white/10 text-accent transition-all shadow-xl"
+          style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%)' }}
+        >
+          <ChevronLeft size={20} />
+        </Link>
+      </div>
       <div className="w-full max-w-[480px] z-10 relative">
         <div className="text-center mb-6 sm:mb-10">
            <div className="flex items-center justify-center gap-4 mb-3 sm:mb-4">
@@ -397,7 +419,7 @@ const LoginPage: React.FC = () => {
               </div>
               <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-accent/40"></div>
            </div>
-           <h1 className="font-heading text-3xl sm:text-5xl font-black tracking-tighter uppercase text-white truncate">{brandingName}</h1>
+           <h1 className="font-heading text-3xl sm:text-5xl font-black tracking-tighter text-white truncate">{brandingName}</h1>
            <p className="text-[8px] font-heading tracking-[0.6em] text-accent/40 uppercase mt-2">
              {view === 'LOGIN' && 'User Login'}
              {view === 'VERIFY_TOKEN' && 'Authorization'}
