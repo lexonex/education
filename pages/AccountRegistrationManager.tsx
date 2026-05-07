@@ -45,6 +45,11 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+const isToday = (dateString?: string) => {
+  if (!dateString) return false;
+  return new Date(dateString).toDateString() === new Date().toDateString();
+};
+
 const SortablePlatformItem = ({ 
   p, 
   index,
@@ -138,7 +143,7 @@ const SortablePlatformItem = ({
                   </div>
                   <div className="p-2 sm:p-3 border border-white/5 bg-white/[0.02] space-y-0.5 sm:space-y-1">
                      <p className="text-[6px] sm:text-[7px] font-heading text-muted/40 uppercase tracking-widest">TODAY</p>
-                     <p className="text-[9px] sm:text-[10px] font-heading text-accent font-bold">{p.clicksToday || 0}</p>
+                     <p className="text-[9px] sm:text-[10px] font-heading text-accent font-bold">{isToday(p.lastClickAt) ? (p.clicksToday || 0) : 0}</p>
                   </div>
                </div>
 
@@ -297,7 +302,7 @@ const AccountRegistrationManager: React.FC = () => {
   };
 
   const totalClicks = tradingPlatforms.reduce((acc, p) => acc + (p.clickCount || 0), 0);
-  const totalClicksToday = tradingPlatforms.reduce((acc, p) => acc + (p.clicksToday || 0), 0);
+  const totalClicksToday = tradingPlatforms.reduce((acc, p) => acc + (isToday(p.lastClickAt) ? (p.clicksToday || 0) : 0), 0);
 
   return (
     <div className="max-w-[1700px] mx-auto space-y-6 sm:space-y-10 animate-in fade-in duration-1000 pb-20 relative px-0.5 sm:px-4 select-none">
