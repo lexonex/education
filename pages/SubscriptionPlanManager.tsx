@@ -48,12 +48,10 @@ import { CSS } from '@dnd-kit/utilities';
 
 const SortablePlanItem = ({ 
   p, 
-  index,
   startEdit, 
   setDeleteTarget 
 }: { 
   p: SubscriptionPlan, 
-  index: number,
   startEdit: (p: SubscriptionPlan) => void, 
   setDeleteTarget: (id: string) => void 
 }) => {
@@ -85,22 +83,14 @@ const SortablePlanItem = ({
         <GripHorizontal size={14} />
       </div>
 
-      <div className={`relative flex-1 p-5 sm:p-8 bg-[#050505] border-[0.5px] transition-all duration-500 flex flex-col ${p.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-white/30'}`} 
-           style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
+      <div className={`relative flex-1 p-5 sm:p-8 bg-[#050505] border transition-all duration-500 flex flex-col ${p.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-white/30'}`} 
+           style={{ clipPath: 'polygon(0 20px, 20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
         
-
+        {/* Corner Accents */}
         
         <div className="relative z-10 flex flex-col mb-2 min-h-[50px] sm:min-h-[60px]">
-          {/* Index Number */}
-          <div className={`absolute top-4 right-6 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black transition-colors leading-none select-none ${
-            p.isPopular 
-              ? 'text-yellow-500/[0.02] group-hover:text-yellow-500/[0.05]' 
-              : 'text-white/[0.02] group-hover:text-accent/[0.05]'
-          }`}>
-            {(index + 1).toString().padStart(2, '0')}
-          </div>
           {p.isPopular && (
-            <div className="absolute -top-5 -right-5 sm:-top-6 sm:-right-6 bg-yellow-500 text-black px-6 sm:px-8 py-1 sm:py-1.5 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em]" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 15% 100%)' }}>POPULAR</div>
+            <div className="absolute -top-5 -right-5 sm:-top-6 sm:-right-6 bg-yellow-500 text-black px-6 sm:px-8 py-1 sm:py-1.5 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em]" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 15% 100%)' }}>RECOMMENDED</div>
           )}
           <h4 className={`font-heading text-xl sm:text-2xl font-black uppercase tracking-tighter mb-1 ${p.isPopular ? 'text-yellow-500' : 'text-white'}`}>{p.name}</h4>
           <div className="flex items-center gap-2">
@@ -117,15 +107,9 @@ const SortablePlanItem = ({
           <div className={`h-1 w-8 sm:w-12 mt-3 sm:mt-4 ${p.isPopular ? 'bg-yellow-500/40' : 'bg-white/10'}`}></div>
         </div>
 
-        <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 flex-grow group/desc">
-          <div className="flex items-center gap-2">
-            <div className={`h-px w-3 sm:w-4 ${p.isPopular ? 'bg-yellow-500/30' : 'bg-accent/30'}`}></div>
-            <span className="text-[7px] sm:text-[8px] font-heading text-muted tracking-widest uppercase">Description</span>
-          </div>
-          <p className="text-[9px] sm:text-[10px] text-muted/60 uppercase tracking-[0.12em] leading-relaxed line-clamp-3 sm:line-clamp-none group-hover/desc:text-white transition-colors">
-            {p.description || 'NO_DESCRIPTION_PROVIDED'}
-          </p>
-        </div>
+        <p className="text-[9px] sm:text-[10px] text-muted/60 uppercase tracking-[0.12em] leading-relaxed min-h-[30px] sm:min-h-[40px] mb-6 sm:mb-8 line-clamp-3 sm:line-clamp-none">
+          {p.description || 'NO_DESCRIPTION_PROVIDED'}
+        </p>
 
         <div className="space-y-3 sm:space-y-5 mb-10 sm:mb-16 flex-grow">
           {(p.features || []).map((feat, i) => {
@@ -144,17 +128,18 @@ const SortablePlanItem = ({
         </div>
 
         <button 
-          className={`group/btn relative w-full py-4 sm:py-5 border font-heading text-[10px] sm:text-[11px] font-black tracking-[0.4em] sm:tracking-[0.5em] uppercase overflow-hidden transition-all active:scale-[0.98] flex items-center justify-center gap-3 square-button ${p.isPopular ? 'bg-yellow-500/5 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-black' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent hover:text-black'}`}
+          className={`w-full py-4 sm:py-5 font-heading text-[9px] sm:text-[10px] font-black tracking-[0.5em] uppercase transition-all flex items-center justify-center gap-3 active:scale-95 ${p.isPopular ? 'bg-yellow-500 text-black hover:bg-yellow-400' : 'bg-accent text-black hover:bg-accent/80'}`} 
+          style={{ clipPath: 'polygon(12% 0, 100% 0, 100% 65%, 88% 100%, 0 100%, 0 35%)' }}
         >
-          <span className="relative z-10">PURCHASE_PLAN</span>
-          <ArrowRight size={14} className="sm:size-[16px] relative z-10 group-hover/btn:translate-x-1 transition-transform" />
+          PURCHASE_PLAN <ArrowRight size={14} />
         </button>
       </div>
 
       <div className="mt-4 sm:mt-6 grid grid-cols-2 gap-3 sm:gap-4 px-1">
         <button 
           onClick={() => startEdit(p)}
-          className="group/edit relative py-4 sm:py-5 bg-zinc-900 border border-white/5 text-white font-heading text-[9px] sm:text-[10px] font-black tracking-[0.3em] uppercase overflow-hidden transition-all hover:border-accent/50 hover:text-accent active:scale-95 flex items-center justify-center gap-3 square-button"
+          className="group/edit relative py-4 sm:py-5 bg-zinc-900 border border-white/5 text-white font-heading text-[9px] sm:text-[10px] font-black tracking-[0.3em] uppercase overflow-hidden transition-all hover:border-accent/50 hover:text-accent active:scale-95 flex items-center justify-center gap-3"
+          style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 85% 100%, 0 100%)' }}
         >
            <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover/edit:opacity-100 transition-opacity"></div>
            <Edit3 size={14} className="group-hover/edit:rotate-12 transition-transform" />
@@ -162,7 +147,8 @@ const SortablePlanItem = ({
         </button>
         <button 
           onClick={() => setDeleteTarget(p.id)}
-          className="group/del relative py-4 sm:py-5 bg-zinc-900 border border-white/5 text-white font-heading text-[9px] sm:text-[10px] font-black tracking-[0.3em] uppercase overflow-hidden transition-all hover:border-error/50 hover:text-error active:scale-95 flex items-center justify-center gap-3 square-button"
+          className="group/del relative py-4 sm:py-5 bg-zinc-900 border border-white/5 text-white font-heading text-[9px] sm:text-[10px] font-black tracking-[0.3em] uppercase overflow-hidden transition-all hover:border-error/50 hover:text-error active:scale-95 flex items-center justify-center gap-3"
+          style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0 100%, 0 30%)' }}
         >
            <div className="absolute inset-0 bg-error/5 opacity-0 group-hover/del:opacity-100 transition-opacity"></div>
            <Trash2 size={14} className="group-hover/del:scale-110 transition-transform" />
@@ -308,6 +294,39 @@ const SubscriptionPlanManager: React.FC = () => {
     setEditingId(null);
   };
 
+  const loadStarterTemplate = () => {
+    setFormData({
+      name: 'Starter Plan',
+      price: '25', // Default placeholder price
+      currency: 'USD',
+      durationDays: '30', // Default placeholder duration
+      description: 'Best for beginners starting their trading journey.',
+      isPopular: false,
+      status: 'ACTIVE',
+      features: [
+        { text: 'Basic to advanced binary trading course', isAvailable: true },
+        { text: 'Text + image based lessons', isAvailable: true },
+        { text: 'Video content', isAvailable: false },
+        { text: 'Step by step class structure', isAvailable: true },
+        { text: 'Market basics', isAvailable: true },
+        { text: 'Candlestick patterns', isAvailable: true },
+        { text: 'Support and resistance', isAvailable: true },
+        { text: 'Entry and exit strategy', isAvailable: true },
+        { text: 'Risk management', isAvailable: true },
+        { text: 'Psychology training', isAvailable: true },
+        { text: 'Practice setup guide', isAvailable: true },
+        { text: 'Weekly market update', isAvailable: true },
+        { text: 'Private community access', isAvailable: true },
+        { text: 'Beginner signal support', isAvailable: true },
+        { text: 'Live Trading', isAvailable: false },
+        { text: 'Signals (Limited)', isAvailable: true },
+        { text: 'Basic Support', isAvailable: true }
+      ]
+    });
+    setIsAdding(true);
+    addNotification('SUCCESS', 'TEMPLATE_LOADED', 'Starter Plan template applied.');
+  };
+
   const startEdit = (p: SubscriptionPlan) => {
     // Handle legacy string array features
     const normalizedFeatures = (p.features || []).map(f => 
@@ -360,6 +379,13 @@ const SubscriptionPlanManager: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4">
+          <button 
+            onClick={loadStarterTemplate}
+            className="px-4 sm:px-8 py-3 sm:py-4 bg-yellow-500/10 border border-yellow-500/40 text-yellow-500 font-heading text-[9px] sm:text-[10px] font-black tracking-[0.2em] sm:tracking-[0.4em] uppercase hover:bg-yellow-500 hover:text-black transition-all flex items-center gap-2 sm:gap-3"
+            style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
+          >
+            <Star size={14} className="animate-pulse" /> <span className="hidden sm:inline">QUICK_STARTER</span><span className="sm:hidden">STARTER</span>
+          </button>
           {hasOrderChanged && (
             <button 
               onClick={saveOrder}
@@ -622,11 +648,10 @@ const SubscriptionPlanManager: React.FC = () => {
           strategy={verticalListSortingStrategy}
         >
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-            {localPlans.map((p, index) => (
+            {localPlans.map(p => (
               <SortablePlanItem 
                 key={p.id} 
                 p={p} 
-                index={index}
                 startEdit={startEdit} 
                 setDeleteTarget={setDeleteTarget} 
               />
