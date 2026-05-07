@@ -774,10 +774,19 @@ export const useDataStore = create<DataState>((set, get) => ({
   },
 
   trackPlatformClick: async (id) => {
+    const platform = get().tradingPlatforms.find(p => p.id === id);
+    const now = new Date();
+    
+    let isNewDay = true;
+    if (platform?.lastClickAt) {
+      const lastClick = new Date(platform.lastClickAt);
+      isNewDay = lastClick.toDateString() !== now.toDateString();
+    }
+
     await updateDoc(doc(db, getPath('trading_platforms'), id), {
       clickCount: increment(1),
-      clicksToday: increment(1),
-      lastClickAt: new Date().toISOString()
+      clicksToday: isNewDay ? 1 : increment(1),
+      lastClickAt: now.toISOString()
     });
   },
 
