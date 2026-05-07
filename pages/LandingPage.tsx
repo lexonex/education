@@ -1,556 +1,820 @@
 
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useDataStore } from '../store/dataStore';
+import React, { useState, useRef, useEffect } from 'react';
 import { useUIStore } from '../store/uiStore';
+import { useDataStore } from '../store/dataStore';
+import { auth, db, getPath } from '../lib/firebase';
+import { initializeApp, deleteApp } from 'firebase/app';
+import { useSearchParams } from 'react-router-dom';
 import { 
-  Video,
-  Monitor,
-  LayoutGrid,
-  Brain,
-  MessageSquare,
-  Award,
-  TrendingUp,
-  FileText,
-  Bell,
-  Cpu as AI,
-  Zap, 
-  Shield, 
-  Cpu, 
-  ChevronRight, 
-  Layers, 
-  Binary, 
-  Database,
+  getAuth,
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  sendPasswordResetEmail,
+  signOut
+} from 'firebase/auth';
+import { 
+  getFirestore,
+  doc, 
+  getDocs, 
+  collection, 
+  query, 
+  where, 
+  setDoc, 
+  updateDoc,
+  limit 
+} from 'firebase/firestore';
+import { 
+  Key, 
+  Mail, 
+  Lock, 
+  User as UserIcon, 
+  X,
   ArrowRight,
-  Terminal,
-  Activity,
-  Lock,
-  Wifi,
+  Loader2,
+  Cpu,
   Target,
-  Box,
-  Server,
-  CloudLightning,
-  ShieldCheck,
-  User as UserIcon,
+  Plus,
+  Fingerprint,
+  Camera,
   Phone,
   MapPin,
-  Mail,
-  Clock,
-  Globe,
-  Radio,
-  HardDrive,
-  Maximize2,
-  Crosshair,
-  Settings,
+  Binary,
+  RefreshCw,
+  ShieldCheck,
+  Database,
+  Eye,
+  EyeOff,
+  Terminal,
   ShieldAlert,
-  MessageCircle,
-  ExternalLink,
-  CheckCircle,
-  XCircle,
-  Facebook,
-  Youtube,
-  Instagram,
-  Send,
-  Music2
+  ChevronLeft
 } from 'lucide-react';
-import SubscriptionPlanSection from '../components/SubscriptionPlanSection';
-import AccountRegistrationSection from '../components/AccountRegistrationSection';
+import { UserRole, UserStatus } from '../types';
+import { compressImage } from '../lib/utils';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '../lib/cropImage';
 
-const LandingPage: React.FC = () => {
+const firebaseConfig = {
+  apiKey: "AIzaSyD2GZkyQBir2wQIBilCXogyT3gz8QRVKgI",
+  authDomain: "edu-lexonex.firebaseapp.com",
+  projectId: "edu-lexonex",
+  storageBucket: "edu-lexonex.firebasestorage.app",
+  messagingSenderId: "47491392874",
+  appId: "1:47491392874:web:b2d040ba976f17bebe7113"
+};
+
+const LoginPage: React.FC = () => {
+  const [view, setView] = useState<'LOGIN' | 'VERIFY_TOKEN' | 'REG_FORM' | 'FORGOT'>('LOGIN');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [registrationToken, setRegistrationToken] = useState('');
+  const [verifiedAdminId, setVerifiedAdminId] = useState('');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const { addNotification, setGlobalLoading, isGlobalLoading } = useUIStore();
   const { 
-    isInitialized,
     brandingName, 
-    ownerName, 
-    ownerPhone, 
-    ownerEmail, 
-    ownerAddress, 
-    officeHours,
-    whatsappNumber,
-    tradingPlatforms,
-    subscriptionPlans,
-    socialLinks,
-    initializePublicSettings,
-    trackPlatformClick
+    isInitialized, 
+    initializePublicSettings, 
+    registrationKeyRequired, 
+    defaultAdminId,
+    registrationToken: masterKey
   } = useDataStore();
+  const [searchParams] = useSearchParams();
+  const [regData, setRegData] = useState({ displayName: '', email: '', username: '', password: '', phone: '', address: '', photoURL: '' });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { setGlobalLoading } = useUIStore();
-  const [glitchText, setGlitchText] = useState(brandingName);
-  const mainRef = React.useRef<HTMLElement>(null);
+  // Cropper State
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [isCropping, setIsCropping] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (mainRef.current) {
-      mainRef.current.scrollTo(0, 0);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo(0, 0);
     }
-  }, []);
+  }, [view]);
+
+  const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleCropConfirm = async () => {
+    if (!imageSrc || !croppedAreaPixels) return;
+    try {
+      const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
+      if (croppedImage) {
+        try {
+          const compressed = await compressImage(croppedImage);
+          setRegData({ ...regData, photoURL: compressed });
+        } catch (err) {
+          console.error("Compression failed:", err);
+          setRegData({ ...regData, photoURL: croppedImage });
+        }
+      }
+      setIsCropping(false);
+      setImageSrc(null);
+    } catch (e) {
+      console.error(e);
+      addNotification('ERROR', 'FAILED', 'Failed to crop image.');
+    }
+  };
+
+  const handleCropCancel = () => {
+    setIsCropping(false);
+    setImageSrc(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (token) {
+      setRegistrationToken(token);
+      setView('VERIFY_TOKEN');
+    } else if (!registrationKeyRequired) {
+      // If no token and registrationKeyRequired is false, we can potentially skip to registration
+      // But let's keep it simple for now and just allow skipping token verification if they click "Create New Identity"
+    }
+  }, [searchParams, registrationKeyRequired]);
 
   useEffect(() => {
     initializePublicSettings();
   }, [initializePublicSettings]);
 
   useEffect(() => {
+    // Only hide the initial loader once when the component mounts and data is ready
     if (isInitialized) {
       const timer = setTimeout(() => {
         setGlobalLoading(false);
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [isInitialized, setGlobalLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInitialized]);
 
   useEffect(() => {
-    setGlitchText(brandingName);
-    const interval = setInterval(() => {
-      const chars = "X01_#@";
-      if (Math.random() > 0.97) {
-        const randomChar = chars[Math.floor(Math.random() * chars.length)];
-        setGlitchText(prev => prev.slice(0, -1) + randomChar);
-        setTimeout(() => setGlitchText(brandingName), 100);
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [brandingName]);
+    if (!isGlobalLoading) {
+      setIsAuthenticating(false);
+    }
+  }, [isGlobalLoading]);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isAuthenticating) return;
+    setIsAuthenticating(true);
+    setGlobalLoading(true);
+    
+    // Small delay to ensure loader is visible
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Note: Success notification is now handled in authStore after status verification
+      // Note: We don't setGlobalLoading(false) here because we want it to persist until the dashboard loads
+    } catch (e: any) {
+      console.error("Login Error:", e);
+      let errorMsg = 'Invalid credentials.';
+      if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+        errorMsg = 'Invalid email or password. Please try again.';
+      } else if (e.code === 'auth/too-many-requests') {
+        errorMsg = 'Too many failed attempts. Please try again later.';
+      }
+      addNotification('ERROR', 'REJECTED', errorMsg);
+      setIsAuthenticating(false);
+      setGlobalLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return addNotification('ERROR', 'EMPTY', 'Enter email.');
+    setIsAuthenticating(true);
+    setGlobalLoading(true);
+    
+    // Small delay to ensure loader is visible
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    try {
+      await sendPasswordResetEmail(auth, email);
+      addNotification('SUCCESS', 'SENT', 'Recovery dispatched.');
+      setView('LOGIN');
+    } catch (e: any) {
+      addNotification('ERROR', 'FAILED', 'Node not found or connection lost.');
+    } finally { 
+      setIsAuthenticating(false); 
+      setGlobalLoading(false);
+    }
+  };
+
+  const handleVerifyToken = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isAuthenticating) return;
+    
+    const trimmedToken = registrationToken.trim();
+    if (!trimmedToken) return addNotification('ERROR', 'REQUIRED', 'Token mandatory.');
+
+    // Check Master Key first
+    if (trimmedToken === masterKey) {
+      if (!defaultAdminId) {
+        // Try to find the first admin if defaultAdminId is not set
+        setIsAuthenticating(true);
+        setGlobalLoading(true);
+        try {
+          const adminsSnap = await getDocs(query(collection(db, getPath('admins')), limit(1)));
+          if (!adminsSnap.empty) {
+            setVerifiedAdminId(adminsSnap.docs[0].id);
+            setView('REG_FORM');
+            addNotification('SUCCESS', 'VERIFIED', 'Master Auth granted.');
+          } else {
+            addNotification('ERROR', 'SYSTEM_ERROR', 'No administrator found in system.');
+          }
+        } finally {
+          setIsAuthenticating(false);
+          setGlobalLoading(false);
+        }
+      } else {
+        setVerifiedAdminId(defaultAdminId);
+        setView('REG_FORM');
+        addNotification('SUCCESS', 'VERIFIED', 'Master Auth granted.');
+      }
+      return;
+    }
+
+    if (!registrationKeyRequired) {
+      setVerifiedAdminId(defaultAdminId);
+      setView('REG_FORM');
+      addNotification('SUCCESS', 'VERIFIED', 'Direct registration enabled.');
+      return;
+    }
+
+    setIsAuthenticating(true);
+    setGlobalLoading(true);
+    
+    // Small delay to ensure loader is visible
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    try {
+      const q = query(collection(db, getPath("registration_keys")), where("key", "==", trimmedToken));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        addNotification('ERROR', 'INVALID', 'Token not found.');
+      } else {
+        const keyData = snap.docs[0].data();
+        if (keyData.status !== 'ACTIVE') {
+          addNotification('ERROR', 'EXPIRED', `Status: ${keyData.status}.`);
+        } else if (!keyData.adminId) {
+          addNotification('ERROR', 'INVALID', 'Token has no associated administrator.');
+        } else {
+          setVerifiedAdminId(keyData.adminId);
+          setView('REG_FORM');
+          addNotification('SUCCESS', 'VERIFIED', 'Auth granted.');
+        }
+      }
+    } finally { 
+      setIsAuthenticating(false); 
+      setGlobalLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isAuthenticating) return;
+
+    // Check if photo exists
+    if (!regData.photoURL) {
+      addNotification('ERROR', 'REQUIRED', 'Profile picture must be uploaded.');
+      return;
+    }
+
+    setIsAuthenticating(true);
+    setGlobalLoading(true);
+    
+    // Small delay to ensure loader is visible
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    if (!verifiedAdminId) {
+      addNotification('ERROR', 'CONFIG_ERROR', 'Admin context missing. Please re-verify your token.');
+      setIsAuthenticating(false);
+      setGlobalLoading(false);
+      return;
+    }
+
+    const secondaryApp = initializeApp(firebaseConfig, `reg-temp-${Date.now()}`);
+    const secondaryAuth = getAuth(secondaryApp);
+    const secondaryDb = getFirestore(secondaryApp);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, regData.email, regData.password);
+      const uid = userCredential.user.uid;
+      const profile = {
+        uid, email: regData.email, displayName: regData.displayName, username: regData.username, phone: regData.phone, address: regData.address, photoURL: regData.photoURL || '', 
+        role: UserRole.STUDENT, status: UserStatus.PENDING, adminId: verifiedAdminId, permissions: { allAccess: false, categories: [] }, bookmarks: []
+      };
+      await setDoc(doc(secondaryDb, getPath(`admins/${verifiedAdminId}/students`), uid), profile);
+      await setDoc(doc(secondaryDb, getPath('user_mappings'), uid), { role: UserRole.STUDENT, adminId: verifiedAdminId, photoURL: regData.photoURL || '', displayName: regData.displayName });
+      
+      if (registrationKeyRequired && registrationToken.trim()) {
+        const q = query(collection(secondaryDb, getPath("registration_keys")), where("key", "==", registrationToken.trim()));
+        const keySnap = await getDocs(q);
+        if (!keySnap.empty) {
+          await updateDoc(doc(secondaryDb, getPath("registration_keys"), keySnap.docs[0].id), { status: 'USED', usedBy: regData.displayName, usedAt: new Date().toISOString() });
+        }
+      }
+      
+      addNotification('SUCCESS', 'COMPLETE', 'Account created. Awaiting administrator approval.');
+      await signOut(secondaryAuth);
+      await deleteApp(secondaryApp);
+      setEmail(regData.email);
+      setRegData({ displayName: '', email: '', username: '', password: '', phone: '', address: '', photoURL: '' });
+      setRegistrationToken('');
+      setView('LOGIN');
+    } catch (e: any) {
+      console.error("Registration Error:", e);
+      let errorMsg = e.message || 'Registration failed.';
+      if (e.code === 'auth/email-already-in-use') {
+        errorMsg = 'This email is already registered. Please use a different email or login.';
+      } else if (e.message?.includes('photoURL')) {
+        errorMsg = 'The profile image is too large. Please try a smaller image.';
+      }
+      addNotification('ERROR', 'FAILED', errorMsg);
+      await deleteApp(secondaryApp).catch(() => {});
+    } finally { 
+      setIsAuthenticating(false); 
+      setGlobalLoading(false);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageSrc(reader.result as string);
+        setIsCropping(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleStartRegistration = async () => {
+    if (!registrationKeyRequired) {
+      if (!defaultAdminId) {
+        setGlobalLoading(true);
+        try {
+          const adminsSnap = await getDocs(query(collection(db, getPath('admins')), limit(1)));
+          if (!adminsSnap.empty) {
+            setVerifiedAdminId(adminsSnap.docs[0].id);
+            setView('REG_FORM');
+          } else {
+            addNotification('ERROR', 'SYSTEM_ERROR', 'No administrator found in system.');
+          }
+        } catch (e) {
+          addNotification('ERROR', 'SYSTEM_ERROR', 'Failed to initialize registration context.');
+        } finally {
+          setGlobalLoading(false);
+        }
+      } else {
+        setVerifiedAdminId(defaultAdminId);
+        setView('REG_FORM');
+      }
+    } else {
+      setView('VERIFY_TOKEN');
     }
   };
 
   return (
-    <div className="h-[100dvh] text-white font-body selection:bg-accent selection:text-black overflow-hidden flex flex-col">
-      
-      {/* --- SLIM NAVIGATION --- */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#050505]/40 backdrop-blur-xl">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-10 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center">
-            <span className="font-heading font-black text-sm sm:text-base tracking-tighter">
-              {glitchText}
-            </span>
-          </div>
-          
-          <div className="hidden lg:flex items-center gap-8">
-             {[
-               { name: 'SERVICES', id: 'ecosystem' },
-               { name: 'CURRICULUM', id: 'curriculum' },
-               { name: 'INFRASTRUCTURE', id: 'extensions' },
-               { name: 'ACCOUNTS', id: 'account_open' },
-               { name: 'PRICING', id: 'pricing' }
-             ].map(item => (
-               <button key={item.name} onClick={() => scrollToSection(item.id)} className="text-[10px] font-heading font-bold uppercase tracking-[0.2em] text-muted hover:text-accent transition-all">
-                 {item.name}
-               </button>
-             ))}
-          </div>
-
-          <Link to="/login">
-            <button className="px-4 py-1.5 sm:px-6 sm:py-2 border border-accent/30 bg-accent/5 text-accent font-heading text-[8px] sm:text-[9px] uppercase tracking-[0.2em] font-black hover:bg-accent hover:text-black transition-all active:scale-95" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}>
-               LOGIN
-            </button>
-          </Link>
+    <div ref={scrollRef} className="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-y-auto font-body text-white selection:bg-accent selection:text-black">
+      <div className="w-full max-w-[480px] z-10 relative">
+        <div className="text-center mb-6 sm:mb-10">
+           <div className="flex items-center justify-center gap-4 mb-3 sm:mb-4">
+              <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-accent/40"></div>
+              <div className="relative">
+                <ShieldCheck size={24} className="text-accent animate-pulse" />
+                <div className="absolute -inset-2 border border-accent/20 rounded-full animate-[spin_10s_linear_infinite]"></div>
+              </div>
+              <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-accent/40"></div>
+           </div>
+           <h1 className="font-heading text-3xl sm:text-5xl font-black tracking-tighter text-white truncate">{brandingName}</h1>
+           <p className="text-[8px] font-heading tracking-[0.6em] text-accent/40 uppercase mt-2">
+             {view === 'LOGIN' && 'User Login'}
+             {view === 'VERIFY_TOKEN' && 'Authorization'}
+             {view === 'REG_FORM' && 'Registration'}
+             {view === 'FORGOT' && 'Recovery'}
+           </p>
         </div>
-      </nav>
-
-      {/* --- SCROLLABLE CONTENT AREA --- */}
-      <main ref={mainRef} className="flex-1 overflow-y-auto custom-scrollbar relative overscroll-behavior-none w-full scroll-smooth snap-y snap-mandatory h-screen">
-        <div className="relative z-10 w-full overflow-x-hidden">
-        
-        {/* --- HERO: MINIMALIST UPLINK --- */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-4 pt-16 relative pb-32 snap-start overflow-hidden">
-           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 sm:h-32 bg-gradient-to-b from-accent/50 to-transparent"></div>
-           
-           <div className="text-center space-y-6 max-w-4xl relative z-10">
-              <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-accent/5 border border-accent/20 mb-4" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 92% 100%, 0 100%)' }}>
-                 <span className="text-[7px] sm:text-[9px] font-heading text-accent tracking-[0.4em] uppercase font-black">SYSTEM_ONLINE</span>
-              </div>
-
-              <h1 className="text-4xl sm:text-6xl lg:text-8xl font-heading font-black tracking-[-0.04em] uppercase leading-[0.95] text-white">
-                BINARY_GRID<br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/20" style={{ WebkitTextStroke: '1px rgba(0,240,255,0.4)' }}>OF_THE_ELITE</span>
-              </h1>
-
-              <p className="text-[10px] sm:text-[13px] text-muted max-w-2xl mx-auto text-center uppercase tracking-[0.3em] leading-relaxed font-medium">
-                 ADVANCED BINARY ACADEMY. LIVE MARKET EXECUTION. SMART MONEY MANAGEMENT.
-              </p>
-              <div className="flex items-center justify-center gap-4 pt-8">
-                 <Link to="/login">
-                    <button className="px-8 py-3 sm:px-12 sm:py-4 bg-accent text-black font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:shadow-glow transition-all flex items-center justify-center gap-3 active:scale-95" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}>
-                       ACCESS ACADEMY <ArrowRight size={14} />
-                    </button>
-                 </Link>
-                 <button onClick={() => scrollToSection('ecosystem')} className="px-8 py-3 sm:px-12 sm:py-4 border border-white/10 text-white font-heading text-[9px] sm:text-[10px] font-black tracking-[0.4em] uppercase hover:bg-white/5 transition-all" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}>
-                    SERVICES
-                 </button>
-              </div>
-           </div>
-
-           {/* Scrolling Ticker */}
-           <div className="absolute bottom-10 left-0 right-0 border-y border-white/5 bg-[#050505]/50 backdrop-blur-sm py-2 overflow-hidden">
-              <div className="flex whitespace-nowrap animate-[marquee_40s_linear_infinite]">
-                 {[...Array(4)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-8 mx-4">
-                       {[
-                          { s: 'BTC', p: '64,230.50', c: '+2.4%', u: true },
-                          { s: 'ETH', p: '3,450.20', c: '+1.2%', u: true },
-                          { s: 'SOL', p: '145.80', c: '+5.7%', u: true },
-                          { s: 'AAPL', p: '189.30', c: '-0.5%', u: false },
-                          { s: 'TSLA', p: '178.20', c: '+1.1%', u: true },
-                          { s: 'EUR/USD', p: '1.0845', c: '+0.02%', u: true },
-                          { s: 'NVDA', p: '890.50', c: '+3.2%', u: true },
-                          { s: 'GOLD', p: '2,340.00', c: '+0.8%', u: true },
-                       ].map((item, j) => (
-                          <div key={j} className="flex items-center gap-3">
-                             <span className="text-[10px] font-mono font-bold text-white">{item.s}</span>
-                             <span className="text-[10px] font-mono text-muted">{item.p}</span>
-                             <span className={`text-[9px] font-mono ${item.u ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                {item.c}
-                             </span>
-                             <span className="text-[9px] font-mono text-white/10">///</span>
-                          </div>
-                       ))}
+        <div className="bg-[#050505] border border-white/10 relative overflow-hidden shadow-2xl" style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%)' }}>
+          <div className="p-6 sm:p-10 lg:p-12 relative z-10">
+            {view === 'LOGIN' && (
+              <div className="space-y-8">
+                <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-accent/10 border border-accent/20 relative">
+                      <Target size={24} className="text-accent animate-pulse" />
+                      <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-accent"></div>
+                      <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-accent"></div>
                     </div>
-                 ))}
-              </div>
-           </div>
-        </section>
-
-        {/* --- SERVICE CORE PILLARS --- */}
-        <section id="ecosystem" className="min-h-screen snap-start py-24 sm:py-32 px-6 sm:px-12 relative border-t border-white/5 flex items-center">
-           <div className="max-w-[1400px] mx-auto w-full">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-16 sm:mb-24">
-                 <div className="space-y-4">
-                    <span className="text-[8px] font-heading text-accent tracking-[0.4em] uppercase font-black flex items-center gap-3">
-                       <div className="w-1.5 h-1.5 bg-accent"></div> OUR_SERVICES
-                    </span>
-                    <h2 className="text-4xl sm:text-6xl font-heading font-black tracking-tighter uppercase leading-[0.9]">
-                       THE_TACTICAL<br/><span className="text-white/20">ADVANTAGE</span>
-                    </h2>
-                 </div>
-                 <p className="text-[10px] text-muted max-w-sm uppercase tracking-widest leading-loose font-medium">
-                    Integrated trading solutions designed for consistent profitability in global binary markets. 
-                 </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                 {[
-                    { title: 'BINARY ACADEMY', icon: <Video className="text-accent" />, desc: 'From basic fundamentals to elite binary strategies. Text, images and HD video modules.' },
-                    { title: 'VIP LIVE SIGNALS', icon: <Radio className="text-accent" />, desc: 'Real-time entry points and expiry signals for both Live and OTC markets.' },
-                    { title: 'BINARY LIVE ROOM', icon: <Monitor className="text-accent" />, desc: 'Join professional binary traders live. Real chart breakdown and trade execution training.' },
-                    { title: 'ELITE MENTORSHIP', icon: <Brain className="text-accent" />, desc: 'One-to-one binary mentorship sessions, personal trade review and portfolio growth planning.' },
-                    { title: 'BINARY AI BOT', icon: <Cpu className="text-accent" />, desc: 'Algorithmic market trend detection and instant binary strategy reminders for precision entries.' },
-                    { title: 'ULTIMATE MONEY MGMT', icon: <FileText className="text-accent" />, desc: "The world's most advanced management system. Engineered for binary profitability even with a 2-4 win ratio out of 10 trades. High-mathematical edge exclusive to our grid." },
-                 ].map((pill, i) => (
-                    <div key={i} className="group relative bg-white/[0.02] border border-white/5 p-8 hover:border-accent/40 transition-all duration-500 overflow-hidden" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%)' }}>
-                       <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-700">
-                          {React.cloneElement(pill.icon as React.ReactElement, { size: 120 } as any)}
-                       </div>
-                       <div className="relative z-10 space-y-6">
-                          <div className="w-12 h-12 flex items-center justify-center bg-white/5 border border-white/10 group-hover:border-accent/30 transition-colors">
-                             {pill.icon}
-                          </div>
-                          <div className="space-y-3">
-                             <h3 className="text-sm font-heading font-black tracking-widest uppercase text-white group-hover:text-accent transition-colors">{pill.title}</h3>
-                             <p className="text-[9px] leading-relaxed text-muted uppercase tracking-widest font-medium">
-                                {pill.desc}
-                             </p>
-                          </div>
-                       </div>
+                    <div>
+                      <h2 className="font-heading text-[14px] tracking-[0.3em] uppercase font-black text-white">User Authentication</h2>
+                      <p className="text-[8px] text-accent/40 uppercase tracking-widest mt-1">Access Control Protocol v5.0</p>
                     </div>
-                 ))}
-              </div>
-           </div>
-        </section>
-
-        {/* --- TRADING ACADEMY MODULES --- */}
-        <section id="curriculum" className="min-h-screen snap-start py-24 sm:py-32 px-6 sm:px-12 bg-white/[0.01] border-y border-white/5 overflow-hidden flex items-center">
-           <div className="max-w-[1400px] mx-auto w-full">
-              <div className="flex flex-col lg:flex-row justify-between items-start gap-12 mb-20">
-                 <div className="space-y-4">
-                    <span className="text-[8px] font-heading text-accent tracking-[0.4em] uppercase font-black flex items-center gap-3">
-                       <div className="w-1.5 h-1.5 bg-accent"></div> ACADEMY_CURRICULUM
-                    </span>
-                    <h2 className="text-4xl sm:text-6xl font-heading font-black tracking-tighter uppercase leading-[0.9]">
-                       MASTER_THE<br/><span className="text-muted/20">BINARY_FLOW</span>
-                    </h2>
-                 </div>
-                 <div className="max-w-md">
-                    <p className="text-[10px] text-muted uppercase tracking-widest leading-loose font-medium">
-                       Our curriculum is engineered to transform beginners into institutional-level binary executors. We don't just teach indicators; we teach the logic behind every binary tick.
-                    </p>
-                 </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5 border border-white/5">
-                 {[
-                    { 
-                       title: 'BINARY PRICE ACTION', 
-                       icon: <TrendingUp size={20} />, 
-                       topics: ['Candlestick Psychology', 'Support & Resistance 2.0', 'Trend Confirmation Models', 'Entry/Exit Precision'] 
-                    },
-                    { 
-                       title: 'SMART MONEY CONCEPTS', 
-                       icon: <Brain size={20} />, 
-                       topics: ['Institutional Order Flow', 'Liquidity Identification', 'Market Manipulation Logic', 'Binary Specific S/D'] 
-                    },
-                    { 
-                       title: 'RISK ARCHITECTURE', 
-                       icon: <Shield size={20} />, 
-                       topics: ['Compounding Strategy', 'Fixed Risk Planning', 'Binary Psychology Mastery', 'Trading Journal Systems'] 
-                    },
-                    { 
-                       title: 'TECHNICAL TOOLKIT', 
-                       icon: <LayoutGrid size={20} />, 
-                       topics: ['Strategy PDF Notes', 'Trading Checklists', 'Binary Chart Markup', 'Custom Indicator Setup'] 
-                    },
-                    { 
-                       title: 'MARKET DYNAMICS', 
-                       icon: <Globe size={20} />, 
-                       topics: ['Live Market Sessions', 'OTC Market Algorithms', 'Binary Session Correlation', 'High Impact News Guard'] 
-                    },
-                    { 
-                       title: 'ELITE EXECUTION', 
-                       icon: <Target size={20} />, 
-                       topics: ['Sniper Entry Models', 'Multi-timeframe Analysis', 'VIP Signal Verification', 'Mentorship Reviews'] 
-                    },
-                 ].map((module, i) => (
-                    <div key={i} className="bg-[#050505] p-10 space-y-8 group transition-all duration-500 hover:bg-white/[0.02]">
-                       <div className="w-12 h-12 flex items-center justify-center border border-white/10 text-muted group-hover:text-accent group-hover:border-accent/40 transition-all">
-                          {module.icon}
-                       </div>
-                       <div className="space-y-6">
-                          <h3 className="text-sm font-heading font-black tracking-[0.2em] uppercase text-white">{module.title}</h3>
-                          <ul className="space-y-3">
-                             {module.topics.map((topic, j) => (
-                                <li key={j} className="flex items-center gap-3">
-                                   <div className="w-1 h-1 bg-accent/30 group-hover:bg-accent transition-colors"></div>
-                                   <span className="text-[9px] font-heading font-bold text-muted/60 uppercase tracking-widest">{topic}</span>
-                                </li>
-                             ))}
-                          </ul>
-                       </div>
-                    </div>
-                 ))}
-              </div>
-           </div>
-        </section>
-
-        {/* --- PRO TRADING INFRASTRUCTURE --- */}
-        <section id="extensions" className="min-h-screen snap-start py-24 sm:py-32 px-6 sm:px-12 relative overflow-hidden flex items-center">
-           <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 left-0 w-full h-full bg-[repeating-linear-gradient(0deg,transparent,transparent_40px,rgba(255,255,255,0.05)_40px,rgba(255,255,255,0.05)_41px)]"></div>
-              <div className="absolute top-0 left-0 w-full h-full bg-[repeating-linear-gradient(90deg,transparent,transparent_40px,rgba(255,255,255,0.05)_40px,rgba(255,255,255,0.05)_41px)]"></div>
-           </div>
- 
-           <div className="max-w-[1400px] mx-auto relative z-10">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-                 <div className="space-y-12">
-                    <div className="space-y-4">
-                       <span className="text-[8px] font-heading text-accent tracking-[0.4em] uppercase font-black flex items-center gap-3">
-                          <div className="w-1.5 h-1.5 bg-accent"></div> SYSTEM_EXTENSIONS
-                       </span>
-                       <h2 className="text-4xl sm:text-7xl font-heading font-black tracking-tighter uppercase leading-[0.9] text-white">
-                          INTEGRATED<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/10" style={{ WebkitTextStroke: '1px rgba(0,240,255,0.2)' }}>BINARY_TECH</span>
-                       </h2>
-                    </div>
-                    
-                    <div className="space-y-10">
-                       <div className="flex gap-8 group">
-                          <div className="shrink-0 w-14 h-14 border border-white/10 flex items-center justify-center text-muted group-hover:text-accent group-hover:border-accent/40 transition-all">
-                             <Radio size={24} />
-                          </div>
-                          <div className="space-y-2">
-                             <h4 className="text-[11px] font-heading font-black tracking-widest text-white uppercase">WEEKLY LIVE ROOM</h4>
-                             <p className="text-[9px] text-muted uppercase tracking-widest leading-loose">Direct access to professional binary trading terminals. Watch real-time execution and chart logic breakdown.</p>
-                          </div>
-                       </div>
-                       
-                       <div className="flex gap-8 group">
-                          <div className="shrink-0 w-14 h-14 border border-white/10 flex items-center justify-center text-muted group-hover:text-accent group-hover:border-accent/40 transition-all">
-                             <AI size={24} />
-                          </div>
-                          <div className="space-y-2">
-                             <h4 className="text-[11px] font-heading font-black tracking-widest text-white uppercase">BINARY MARKET AI</h4>
-                             <p className="text-[9px] text-muted uppercase tracking-widest leading-loose">Neural network suggestions for binary market direction and volatility alerts synced across academy nodes.</p>
-                          </div>
-                       </div>
-
-                       <div className="flex gap-8 group">
-                          <div className="shrink-0 w-14 h-14 border border-white/10 flex items-center justify-center text-muted group-hover:text-accent group-hover:border-accent/40 transition-all">
-                             <FileText size={24} />
-                          </div>
-                          <div className="space-y-2">
-                             <h4 className="text-[11px] font-heading font-black tracking-widest text-white uppercase">DYNAMIC TOOLKIT</h4>
-                             <p className="text-[9px] text-muted uppercase tracking-widest leading-loose">Binary PDF strategy blueprints, session guides, and risk calculators updated for every market cycle.</p>
-                          </div>
-                       </div>
-                    </div>
-                 </div>
-
-                 <div className="bg-white/[0.02] border border-white/10 p-1 bg-gradient-to-b from-white/10 to-transparent">
-                    <div className="bg-[#050505] p-8 sm:p-12 space-y-10">
-                       <div className="flex justify-between items-center border-b border-white/5 pb-8">
-                          <div className="space-y-1">
-                             <span className="text-[7px] font-heading tracking-[0.5em] text-accent uppercase font-black">MARKET_STATUS</span>
-                             <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                <span className="text-[10px] font-heading font-black tracking-widest text-white uppercase">SYSTEMS_ACTIVE</span>
-                             </div>
-                          </div>
-                          <div className="text-right">
-                             <span className="text-[7px] font-heading tracking-[0.5em] text-white/20 uppercase font-black">ENCRYPTION</span>
-                             <div className="text-[10px] font-heading font-black tracking-widest text-white uppercase">AES_256_ACTIVE</div>
-                          </div>
-                       </div>
-
-                       <div className="space-y-6">
-                          {[
-                             { label: 'OTC_SIGNAL_ALGORITHM', value: 92 },
-                             { label: 'LIVE_MARKET_PRECISION', value: 89 },
-                             { label: 'STUDENT_SUCCESS_RATIO', value: 76 }
-                          ].map((stat, i) => (
-                             <div key={i} className="space-y-3">
-                                <div className="flex justify-between items-end">
-                                   <span className="text-[8px] font-heading font-bold text-muted uppercase tracking-[0.2em]">{stat.label}</span>
-                                   <span className="text-[9px] font-mono text-accent">{stat.value}%</span>
-                                </div>
-                                <div className="h-1 w-full bg-white/5 relative">
-                                   <div className="absolute top-0 left-0 h-full bg-accent transition-all duration-1000" style={{ width: `${stat.value}%` }}></div>
-                                </div>
-                             </div>
-                          ))}
-                       </div>
-
-                       <div className="pt-6">
-                          <button onClick={() => scrollToSection('account_open')} className="w-full py-4 bg-accent text-[#050505] font-heading text-[9px] font-black tracking-[0.4em] uppercase hover:bg-white hover:text-black transition-all">
-                             INITIALIZE_MEMBERSHIP
-                          </button>
-                       </div>
-                    </div>
-                 </div>
-              </div>
-           </div>
-        </section>
-
-        {/* --- ACCOUNT OPENING PLATFORMS --- */}
-        <section id="account_open" className="min-h-screen snap-start flex items-center bg-[#050505]">
-          <AccountRegistrationSection />
-        </section>
-
-        {/* --- SUBSCRIPTION PLANS --- */}
-        <section id="pricing" className="min-h-screen snap-start flex items-center bg-white/[0.01]">
-          <SubscriptionPlanSection />
-        </section>
-
-        {/* --- TIDY FOOTER --- */}
-        <footer className="min-h-screen snap-start flex items-center border-t border-white/5 bg-[#050505] py-20 px-6 sm:px-12">
-          <div className="max-w-[1400px] mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-16 sm:mb-20">
-              <div className="space-y-5 sm:space-y-6">
-                <div className="flex items-center">
-                  <h3 className="font-heading font-black text-lg sm:text-xl tracking-tighter text-white">{brandingName}</h3>
+                  </div>
                 </div>
-                <p className="text-[9px] text-muted uppercase tracking-widest leading-loose font-medium">
-                  Pioneering dynamic multi-tenant binary education through elite trading nodes. Deployed globally.
-                </p>
-              </div>
 
-              <div className="space-y-5 sm:space-y-6">
-                 <h4 className="font-heading text-[10px] font-black uppercase tracking-[0.4em] text-accent">IDENTITY</h4>
-                 <div className="space-y-3">
-                    <div className="flex items-center gap-4 text-white/40 hover:text-accent transition-colors group cursor-default">
-                      <UserIcon size={12} className="shrink-0 text-accent/60 group-hover:scale-110 transition-transform" />
-                      <span className="text-[10px] font-heading uppercase tracking-widest flex items-center gap-2">OWNER: <span className="text-white/80">{ownerName}</span></span>
+                <form onSubmit={handleLogin} className="space-y-6">
+                  <div className="space-y-2.5 group">
+                    <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
+                      <Mail size={14} className="text-accent/40 group-focus-within:text-accent" />
+                      EMAIL_ADDRESS
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500 pointer-events-none"></div>
+                      <input 
+                        required 
+                        type="email" 
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)} 
+                        placeholder="ENTER EMAIL" 
+                        className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase" 
+                        style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                      />
+                      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
                     </div>
-                    <div className="flex items-center gap-4 text-white/40 hover:text-accent transition-colors group cursor-default">
-                      <Clock size={12} className="shrink-0 group-hover:scale-110 transition-transform" />
-                      <span className="text-[10px] font-heading uppercase tracking-widest flex items-center gap-2">HOURS: <span className="text-white/80">{officeHours}</span></span>
-                    </div>
-                 </div>
-              </div>
+                  </div>
 
-              <div className="space-y-5 sm:space-y-6">
-                 <h4 className="font-heading text-[10px] font-black uppercase tracking-[0.4em] text-accent">CONTACT</h4>
-                 <div className="space-y-3">
-                    <a href={`tel:${ownerPhone}`} className="flex items-center gap-4 text-white/40 hover:text-accent transition-colors group">
-                      <Phone size={12} className="shrink-0 group-hover:scale-110 transition-transform" />
-                      <span className="text-[10px] font-heading uppercase tracking-widest flex items-center gap-2">PHONE: <span className="text-white/80">{ownerPhone}</span></span>
-                    </a>
-                    {whatsappNumber && (
-                      <a href={`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-white/40 hover:text-accent transition-colors group">
-                        <MessageCircle size={12} className="shrink-0 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-heading uppercase tracking-widest flex items-center gap-2">WHATSAPP: <span className="text-white/80">{whatsappNumber}</span></span>
-                      </a>
-                    )}
-                    <a href={`mailto:${ownerEmail}`} className="flex items-center gap-4 text-white/40 hover:text-accent transition-colors group">
-                      <Mail size={12} className="shrink-0 group-hover:scale-110 transition-transform" />
-                      <span className="text-[10px] font-heading uppercase tracking-widest truncate flex items-center gap-2">EMAIL: <span className="text-white/80">{ownerEmail}</span></span>
-                    </a>
-                 </div>
-              </div>
-
-              <div className="space-y-5 sm:space-y-6">
-                 <h4 className="font-heading text-[10px] font-black uppercase tracking-[0.4em] text-accent">LOCATION</h4>
-                 <div className="space-y-3">
-                    <div className="flex items-start gap-4 text-white/40 hover:text-accent transition-colors group cursor-default">
-                      <MapPin size={12} className="shrink-0 mt-1 group-hover:scale-110 transition-transform" />
-                      <span className="text-[10px] font-heading uppercase tracking-widest leading-loose flex items-start gap-2">OFFICE: <span className="text-white/80">{ownerAddress}</span></span>
+                  <div className="space-y-2.5 group">
+                    <div className="flex justify-between items-center pr-1">
+                      <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
+                        <Lock size={14} className="text-accent/40 group-focus-within:text-accent" />
+                        PASSWORD
+                      </label>
+                      <button type="button" onClick={() => setView('FORGOT')} className="text-[8px] font-heading text-accent/40 hover:text-accent uppercase tracking-[0.2em] transition-all">[ Forgot? ]</button>
                     </div>
-                 </div>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500 pointer-events-none"></div>
+                      <input 
+                        required 
+                        type={showPassword ? "text" : "password"} 
+                        value={password} 
+                        onChange={e => setPassword(e.target.value)} 
+                        placeholder="ENTER PASSWORD" 
+                        className="w-full bg-white/[0.02] border border-white/10 p-4 pl-4 pr-12 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10" 
+                        style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                      />
+                      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted/30 hover:text-accent transition-colors">
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 space-y-6">
+                    <button 
+                      type="submit" 
+                      disabled={isAuthenticating} 
+                      className="w-full py-5 bg-white text-black font-heading text-[12px] font-black tracking-[0.6em] uppercase hover:bg-accent hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group" 
+                      style={{ clipPath: 'polygon(12% 0, 100% 0, 100% 65%, 88% 100%, 0 100%, 0 35%)' }}
+                    >
+                      {isAuthenticating ? <Loader2 size={20} className="animate-spin" /> : <>Login <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" /></>}
+                    </button>
+                    
+                    <div className="text-center">
+                      <button 
+                        type="button"
+                        onClick={handleStartRegistration} 
+                        className="text-[9px] font-heading text-muted/30 hover:text-white uppercase tracking-[0.5em] transition-all flex items-center justify-center gap-3 mx-auto"
+                      >
+                        <Plus size={14} /> [ Register ]
+                      </button>
+                    </div>
+                  </div>
+                </form>
               </div>
+            )}
+            
+            {view === 'FORGOT' && (
+              <div className="space-y-8">
+                <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-error/10 border border-error/20 relative">
+                      <ShieldAlert size={24} className="text-error animate-pulse" />
+                      <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-error"></div>
+                      <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-error"></div>
+                    </div>
+                    <div>
+                      <h2 className="font-heading text-[14px] tracking-[0.3em] uppercase font-black text-white">Forgot Password</h2>
+                      <p className="text-[8px] text-error/40 uppercase tracking-widest mt-1">Reset your account access</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setView('LOGIN')} className="p-2 hover:bg-white/5 rounded-full transition-colors text-muted/40 hover:text-white group">
+                    <X size={20} className="group-hover:rotate-90 transition-transform" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleForgotPassword} className="space-y-8">
+                  <div className="space-y-2.5 group">
+                    <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-error transition-colors">
+                      <Mail size={14} className="text-error/40 group-focus-within:text-error" />
+                      Recovery Email
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-error/0 group-focus-within:bg-error/[0.02] transition-all duration-500 pointer-events-none"></div>
+                      <input 
+                        required 
+                        type="email" 
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)} 
+                        placeholder="ENTER REGISTERED EMAIL" 
+                        className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-error/50 transition-colors duration-300 placeholder:text-muted/10 uppercase" 
+                        style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                      />
+                      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-error transition-colors"></div>
+                    </div>
+                    <p className="text-[7px] text-muted/30 uppercase tracking-widest">A secure restoration link will be dispatched to this node.</p>
+                  </div>
+
+                  <div className="pt-4 space-y-5">
+                    <button 
+                      type="submit" 
+                      disabled={isAuthenticating} 
+                      className="w-full py-5 bg-error/10 border border-error/40 text-error font-heading text-[12px] font-black tracking-[0.6em] uppercase hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group" 
+                      style={{ clipPath: 'polygon(12% 0, 100% 0, 100% 65%, 88% 100%, 0 100%, 0 35%)' }}
+                    >
+                      {isAuthenticating ? <Loader2 size={20} className="animate-spin" /> : <>Reset Password <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" /></>}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setView('LOGIN')} 
+                      className="w-full py-2 text-[9px] font-heading text-muted/30 uppercase tracking-[0.5em] hover:text-white transition-all flex items-center justify-center gap-3"
+                    >
+                      <ChevronLeft size={14} /> [ Back ]
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {view === 'VERIFY_TOKEN' && (
+              <div className="space-y-8">
+                <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-accent/10 border border-accent/20 relative">
+                      <Key size={24} className="text-accent animate-pulse" />
+                      <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-accent"></div>
+                      <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-accent"></div>
+                    </div>
+                    <div>
+                      <h2 className="font-heading text-[14px] tracking-[0.3em] uppercase font-black text-white">Token Verification</h2>
+                      <p className="text-[8px] text-accent/40 uppercase tracking-widest mt-1">Registration Authorization Required</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setView('LOGIN')} className="p-2 hover:bg-white/5 rounded-full transition-colors text-muted/40 hover:text-white group">
+                    <X size={20} className="group-hover:rotate-90 transition-transform" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleVerifyToken} className="space-y-8">
+                  <div className="space-y-4 group">
+                    <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
+                      <Binary size={14} className="text-accent/40 group-focus-within:text-accent" />
+                      REGISTRATION_TOKEN
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500 pointer-events-none"></div>
+                      <input 
+                        autoFocus 
+                        value={registrationToken} 
+                        onChange={e => setRegistrationToken(e.target.value)} 
+                        placeholder="REG-XXXXXX" 
+                        className="w-full bg-black border-b border-white/10 p-6 text-2xl font-heading tracking-[0.4em] outline-none focus:border-accent text-center text-accent uppercase placeholder:text-white/5" 
+                      />
+                    </div>
+                    <p className="text-[7px] text-muted/30 uppercase tracking-widest text-center">Enter the unique authorization code provided by your administrator.</p>
+                  </div>
+
+                  <div className="pt-4 space-y-5">
+                    <button 
+                      type="submit" 
+                      disabled={isAuthenticating} 
+                      className="w-full py-5 bg-white text-black font-heading text-[12px] font-black tracking-[0.6em] uppercase hover:bg-accent hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group" 
+                      style={{ clipPath: 'polygon(12% 0, 100% 0, 100% 65%, 88% 100%, 0 100%, 0 35%)' }}
+                    >
+                      {isAuthenticating ? <Loader2 size={20} className="animate-spin" /> : <>Verify <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" /></>}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setView('LOGIN')} 
+                      className="w-full py-2 text-[9px] font-heading text-muted/30 uppercase tracking-[0.5em] hover:text-white transition-all flex items-center justify-center gap-3"
+                    >
+                      <ChevronLeft size={14} /> [ Back ]
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+            {view === 'REG_FORM' && (
+              <div className="space-y-8">
+                <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-accent/10 border border-accent/20 relative">
+                      <Fingerprint size={24} className="text-accent animate-pulse" />
+                      <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-accent"></div>
+                      <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-accent"></div>
+                    </div>
+                    <div>
+                      <h2 className="font-heading text-[14px] tracking-[0.3em] uppercase font-black text-white">Account Registration</h2>
+                      <p className="text-[8px] text-accent/40 uppercase tracking-widest mt-1">Secure Identity Protocol v2.5</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setView('LOGIN')} className="p-2 hover:bg-white/5 rounded-full transition-colors text-muted/40 hover:text-white group">
+                    <X size={20} className="group-hover:rotate-90 transition-transform" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleRegister} className="space-y-8">
+                  {/* Photo Upload Section */}
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="relative group">
+                      <div 
+                        onClick={() => fileInputRef.current?.click()} 
+                        className="w-24 h-24 bg-black border border-white/10 p-1 relative cursor-pointer group-hover:border-accent/40 transition-all duration-500"
+                        style={{ clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 0 100%, 0 20%)' }}
+                      >
+                        <div className="w-full h-full bg-zinc-950 flex items-center justify-center overflow-hidden relative">
+                           {/* Scanning line effect */}
+                           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/20 to-transparent h-1/2 w-full animate-[scan_2s_linear_infinite] pointer-events-none z-10"></div>
+                          
+                          {regData.photoURL ? (
+                            <img src={regData.photoURL || undefined} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" referrerPolicy="no-referrer" />
+                          ) : (
+                            <Camera size={28} className="text-white/10 group-hover:text-accent/40 transition-all" />
+                          )}
+                        </div>
+                      </div>
+                      {/* Corner Accents for Photo */}
+                      <div className="absolute -top-2 -left-2 w-4 h-4 border-t-2 border-l-2 border-accent/20 group-hover:border-accent transition-colors"></div>
+                      
+                      <div className="absolute -bottom-1 -right-1 p-1.5 bg-accent text-black rounded-sm shadow-glow-sm z-20">
+                        <Plus size={12} strokeWidth={3} />
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <label className="text-[9px] font-heading text-accent/60 uppercase tracking-[0.3em] font-bold">Profile Image Upload</label>
+                      <p className="text-[7px] text-muted/40 uppercase mt-1">Format: JPG, PNG (Max 2MB)</p>
+                    </div>
+                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
+                    {[
+                      { icon: <UserIcon size={14}/>, label: 'FULL_NAME', placeholder: 'e.g. John Doe', key: 'displayName' },
+                      { icon: <Terminal size={14}/>, label: 'USERNAME', placeholder: 'e.g. johndoe123', key: 'username' },
+                      { icon: <Mail size={14}/>, label: 'EMAIL_ADDRESS', placeholder: 'example@mail.com', key: 'email', type: 'email' },
+                      { icon: <Lock size={14}/>, label: 'SECURE_PASSWORD', placeholder: 'Enter password', key: 'password', type: 'password' },
+                      { icon: <Phone size={14}/>, label: 'CONTACT_NUMBER', placeholder: '+1XXXXXXXXXX', key: 'phone' },
+                      { icon: <MapPin size={14}/>, label: 'PHYSICAL_ADDRESS', placeholder: 'City, Country', key: 'address' },
+                    ].map(field => (
+                      <div key={field.key} className="space-y-2.5 group">
+                        <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
+                          <span className="text-accent/40 group-focus-within:text-accent">{field.icon}</span>
+                          {field.label}
+                        </label>
+                        <div className="relative">
+                          {/* Input Background with subtle glow */}
+                          <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500 pointer-events-none"></div>
+                          
+                          <input 
+                            required 
+                            type={field.key === 'password' ? (showRegPassword ? 'text' : 'password') : (field.type || 'text')} 
+                            placeholder={field.placeholder} 
+                            value={(regData as any)[field.key]} 
+                            onChange={e => setRegData({...regData, [field.key]: e.target.value})} 
+                            className={`w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 ${field.key === 'password' ? 'pr-12' : ''}`} 
+                            style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                          />
+                          
+                          {/* Input Corner Accents */}
+                          <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                          
+                          {field.key === 'password' && (
+                            <button 
+                              type="button" 
+                              onClick={() => setShowRegPassword(!showRegPassword)} 
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted/30 hover:text-accent transition-colors"
+                            >
+                              {showRegPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          ) || (
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white/5 rounded-full group-focus-within:bg-accent/60 group-focus-within:animate-pulse transition-all"></div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-6 space-y-5">
+                    <button 
+                      type="submit" 
+                      disabled={isAuthenticating} 
+                      className="w-full py-5 bg-white text-black font-heading text-[12px] font-black tracking-[0.6em] uppercase hover:bg-accent hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group" 
+                      style={{ clipPath: 'polygon(12% 0, 100% 0, 100% 65%, 88% 100%, 0 100%, 0 35%)' }}
+                    >
+                      {isAuthenticating ? (
+                        <Loader2 size={20} className="animate-spin" />
+                      ) : (
+                        <>
+                          Register
+                          <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                        </>
+                      )}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setView('LOGIN')} 
+                      className="w-full py-2 text-[9px] font-heading text-muted/30 uppercase tracking-[0.5em] hover:text-white transition-all flex items-center justify-center gap-3"
+                    >
+                      <ChevronLeft size={14} /> [ Back ]
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="mt-6 flex justify-between items-center px-4 opacity-20"><div className="flex gap-2"><Database size={10} /><span className="text-[7px] font-heading uppercase">SECURE</span></div><div className="flex gap-2"><span className="text-[7px] font-heading uppercase">ENCRYPTED</span><ShieldCheck size={10} /></div></div>
+      </div>
+      <style>{` @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(200%); } } `}</style>
+
+      {/* Image Cropper Modal */}
+      {isCropping && imageSrc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg bg-[#050505] border border-white/10 relative flex flex-col h-[80vh] sm:h-[600px]" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 95%, 95% 100%, 0 100%)' }}>
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <h3 className="font-heading text-sm tracking-[0.2em] uppercase font-black text-white">Adjust Image</h3>
+              <button onClick={handleCropCancel} className="text-muted hover:text-white transition-colors">
+                <X size={20} />
+              </button>
             </div>
             
-            <div className="pt-8 sm:pt-10 border-t border-white/5 flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
-               <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6 lg:gap-8">
-                  <p className="text-[8px] font-heading text-muted/40 uppercase tracking-[0.3em] sm:tracking-[0.5em] text-center">© 2025 {brandingName}</p>
-                  <div className="hidden sm:block h-px w-6 bg-white/10"></div>
-                  <p className="text-[8px] font-heading text-accent/30 uppercase tracking-[0.3em] sm:tracking-[0.5em] text-center">ENCRYPTED</p>
-               </div>
-               <div className="flex gap-4 sm:gap-6">
-                  {['Terms', 'Privacy', 'API'].map(item => (
-                    <button key={item} className="text-[8px] font-heading text-muted/20 uppercase tracking-widest hover:text-accent transition-colors">{item}</button>
-                  ))}
-               </div>
+            <div className="relative flex-1 bg-black w-full overflow-hidden">
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+                classes={{
+                  containerClassName: 'bg-black',
+                  mediaClassName: '',
+                  cropAreaClassName: 'border-2 border-accent shadow-[0_0_0_9999px_rgba(0,0,0,0.7)]'
+                }}
+              />
+            </div>
 
-               {/* SOCIAL MEDIA LINKS */}
-               <div className="flex items-center gap-3 sm:gap-4 order-first sm:order-none">
-                 {socialLinks.facebook && (
-                   <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="Facebook">
-                     <Facebook size={14} />
-                   </a>
-                 )}
-                 {socialLinks.telegram && (
-                   <a href={socialLinks.telegram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="Telegram">
-                     <Send size={14} />
-                   </a>
-                 )}
-                 {socialLinks.instagram && (
-                   <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="Instagram">
-                     <Instagram size={14} />
-                   </a>
-                 )}
-                 {socialLinks.youtube && (
-                   <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="YouTube">
-                     <Youtube size={14} />
-                   </a>
-                 )}
-                 {socialLinks.tiktok && (
-                   <a href={socialLinks.tiktok} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-white/5 border border-white/10 text-muted/40 hover:text-accent hover:border-accent/40 hover:shadow-glow transition-all duration-300" title="TikTok">
-                     <Music2 size={14} />
-                   </a>
-                 )}
-               </div>
+            <div className="p-6 space-y-6 bg-[#050505] border-t border-white/10">
+              <div className="space-y-2">
+                <div className="flex justify-between text-[10px] font-heading uppercase tracking-widest text-muted">
+                  <span>Zoom</span>
+                  <span>{(zoom * 100).toFixed(0)}%</span>
+                </div>
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  aria-labelledby="Zoom"
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-accent"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={handleCropCancel}
+                  className="flex-1 py-3 border border-white/10 text-muted font-heading text-[10px] font-black tracking-[0.2em] uppercase hover:bg-white/5 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCropConfirm}
+                  className="flex-1 py-3 bg-accent text-black font-heading text-[10px] font-black tracking-[0.2em] uppercase hover:bg-accent/90 transition-all shadow-glow-sm"
+                  style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
+                >
+                  Confirm
+                </button>
+              </div>
             </div>
           </div>
-        </footer>
         </div>
-      </main>
-
-      <style>{`
-        @keyframes h-scan { 0% { top: -5%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 105%; opacity: 0; } }
-        @keyframes v-scan { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 110%; opacity: 0; } }
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-      `}</style>
+      )}
     </div>
   );
 };
 
-export default LandingPage;
+export default LoginPage;
