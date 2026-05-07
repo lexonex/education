@@ -31,7 +31,13 @@ import {
   MessageCircle,
   Clock,
   Image as ImageIcon,
-  Camera
+  Camera,
+  Facebook,
+  Instagram,
+  Youtube,
+  Send,
+  Music2,
+  Share2
 } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
@@ -50,6 +56,7 @@ const SettingsPage: React.FC = () => {
     seoTitle,
     seoDescription,
     seoKeywords,
+    socialLinks,
     updateSettings, 
     addLog 
   } = useDataStore();
@@ -67,12 +74,17 @@ const SettingsPage: React.FC = () => {
   const [newSeoKeywords, setNewSeoKeywords] = useState(seoKeywords);
   
   const [contactInfo, setContactInfo] = useState({
-    ownerName: ownerName,
-    ownerPhone: ownerPhone,
-    ownerEmail: ownerEmail,
-    ownerAddress: ownerAddress,
-    whatsappNumber: whatsappNumber,
-    officeHours: officeHours
+    ownerName,
+    ownerPhone,
+    ownerEmail,
+    ownerAddress,
+    whatsappNumber,
+    officeHours,
+    facebook: socialLinks?.facebook || '',
+    telegram: socialLinks?.telegram || '',
+    instagram: socialLinks?.instagram || '',
+    youtube: socialLinks?.youtube || '',
+    tiktok: socialLinks?.tiktok || ''
   });
   
   const [isSaving, setIsSaving] = useState(false);
@@ -92,9 +104,14 @@ const SettingsPage: React.FC = () => {
       ownerEmail,
       ownerAddress,
       whatsappNumber,
-      officeHours
+      officeHours,
+      facebook: socialLinks?.facebook || '',
+      telegram: socialLinks?.telegram || '',
+      instagram: socialLinks?.instagram || '',
+      youtube: socialLinks?.youtube || '',
+      tiktok: socialLinks?.tiktok || ''
     });
-  }, [registrationToken, registrationKeyRequired, defaultAdminId, brandingName, ownerName, ownerPhone, ownerEmail, ownerAddress, whatsappNumber, officeHours, faviconURL, seoTitle, seoDescription, seoKeywords]);
+  }, [registrationToken, registrationKeyRequired, defaultAdminId, brandingName, ownerName, ownerPhone, ownerEmail, ownerAddress, whatsappNumber, officeHours, faviconURL, seoTitle, seoDescription, seoKeywords, socialLinks]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -403,6 +420,56 @@ const SettingsPage: React.FC = () => {
                    </div>
                 </div>
               </div>
+
+               <div className="space-y-10 border-t border-white/5 pt-12">
+                 <div className="flex items-center gap-4">
+                    <Share2 size={18} className="text-accent shrink-0" />
+                    <h3 className="font-heading text-[10px] sm:text-xs tracking-[0.2em] sm:tracking-[0.4em] uppercase font-black text-white">SOCIAL LINKS</h3>
+                 </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2.5 group">
+                       <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors"><Facebook size={14} className="text-accent/40 group-focus-within:text-accent shrink-0" /> FACEBOOK</label>
+                       <div className="relative">
+                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
+                         <input value={contactInfo.facebook} onChange={e => updateField('facebook', e.target.value)} className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }} placeholder="https://facebook.com/..." />
+                         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                       </div>
+                    </div>
+                    <div className="space-y-2.5 group">
+                       <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors"><Send size={14} className="text-accent/40 group-focus-within:text-accent shrink-0" /> TELEGRAM</label>
+                       <div className="relative">
+                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
+                         <input value={contactInfo.telegram} onChange={e => updateField('telegram', e.target.value)} className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }} placeholder="https://t.me/..." />
+                         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                       </div>
+                    </div>
+                    <div className="space-y-2.5 group">
+                       <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors"><Instagram size={14} className="text-accent/40 group-focus-within:text-accent shrink-0" /> INSTAGRAM</label>
+                       <div className="relative">
+                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
+                         <input value={contactInfo.instagram} onChange={e => updateField('instagram', e.target.value)} className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }} placeholder="https://instagram.com/..." />
+                         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                       </div>
+                    </div>
+                    <div className="space-y-2.5 group">
+                       <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors"><Youtube size={14} className="text-accent/40 group-focus-within:text-accent shrink-0" /> YOUTUBE</label>
+                       <div className="relative">
+                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
+                         <input value={contactInfo.youtube} onChange={e => updateField('youtube', e.target.value)} className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }} placeholder="https://youtube.com/..." />
+                         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                       </div>
+                    </div>
+                    <div className="space-y-2.5 group">
+                       <label className="flex items-center gap-2 text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors"><Music2 size={14} className="text-accent/40 group-focus-within:text-accent shrink-0" /> TIKTOK</label>
+                       <div className="relative">
+                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
+                         <input value={contactInfo.tiktok} onChange={e => updateField('tiktok', e.target.value)} className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading tracking-widest outline-none focus:border-accent/50 transition-colors duration-300" style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }} placeholder="https://tiktok.com/..." />
+                         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                       </div>
+                    </div>
+                 </div>
+               </div>
 
               {/* Centered button container */}
               <div className="pt-10 flex justify-center">
