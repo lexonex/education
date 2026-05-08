@@ -152,19 +152,19 @@ const SubscriptionPlanSection: React.FC = () => {
                   ) : (
                     <div className="mb-8 min-h-[140px]"></div>
                   )}
+                  
+                  <div className="">
+                    <Link to="/login" className="w-full">
+                      <button 
+                        className={`w-full py-4 sm:py-5 font-heading text-[10px] sm:text-[11px] font-black tracking-[0.4em] sm:tracking-[0.5em] uppercase transition-all flex items-center justify-center gap-3 active:scale-95 ${plan.isPopular ? 'bg-yellow-500 text-black hover:bg-yellow-400 shadow-glow-sm' : 'bg-white text-black hover:bg-accent'}`}
+                        style={{ clipPath: 'polygon(0px 0px, 100% 0px, 100% 65%, 88% 100%, 0px 100%)' }}
+                      >
+                        GET STARTED <ArrowRight size={14} className="sm:size-[16px]" />
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="mt-4 sm:mt-6 px-1">
-              <Link to="/login" className="w-full">
-                <button 
-                  className={`w-full py-4 sm:py-5 font-heading text-[10px] sm:text-[11px] font-black tracking-[0.4em] sm:tracking-[0.5em] uppercase transition-all flex items-center justify-center gap-3 active:scale-95 ${plan.isPopular ? 'bg-yellow-500 text-black hover:bg-yellow-400 shadow-glow-sm' : 'bg-white text-black hover:bg-accent'}`}
-                  style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 85% 100%, 0 100%)' }}
-                >
-                  GET STARTED <ArrowRight size={14} className="sm:size-[16px]" />
-                </button>
-              </Link>
             </div>
           </div>
         );
