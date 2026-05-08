@@ -133,9 +133,9 @@ const LandingPage: React.FC = () => {
                { name: 'SERVICES', id: 'ecosystem' },
                { name: 'CURRICULUM', id: 'curriculum' },
                { name: 'INFRASTRUCTURE', id: 'extensions' },
-               { name: 'ACCOUNTS', id: 'account_open' },
-               { name: 'PRICING', id: 'pricing' }
-             ].map(item => (
+               { name: 'ACCOUNTS', id: 'account_open', show: tradingPlatforms.length > 0 },
+               { name: 'PRICING', id: 'pricing', show: subscriptionPlans.length > 0 }
+             ].filter(item => item.show === undefined || item.show).map(item => (
                <button key={item.name} onClick={() => scrollToSection(item.id)} className="text-[10px] font-heading font-bold uppercase tracking-[0.2em] text-muted hover:text-accent transition-all">
                  {item.name}
                </button>
@@ -431,17 +431,21 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* --- ACCOUNT OPENING PLATFORMS --- */}
-        <section id="account_open" className="min-h-screen snap-start flex items-center bg-[#050505]">
-          <AccountRegistrationSection />
-        </section>
+        {tradingPlatforms.length > 0 && (
+          <section id="account_open" className="min-h-screen snap-start flex items-center bg-[#050505]">
+            <AccountRegistrationSection />
+          </section>
+        )}
 
         {/* --- SUBSCRIPTION PLANS --- */}
-        <section id="pricing" className="min-h-screen snap-start flex items-center bg-white/[0.01]">
-          <SubscriptionPlanSection />
-        </section>
+        {subscriptionPlans.length > 0 && (
+          <section id="pricing" className="min-h-screen snap-start flex items-center bg-white/[0.01]">
+            <SubscriptionPlanSection />
+          </section>
+        )}
 
         {/* --- TIDY FOOTER --- */}
-        <footer className="min-h-screen snap-start flex items-center border-t border-white/5 bg-[#050505] py-20 px-6 sm:px-12">
+        <footer className="border-t border-white/5 bg-[#050505] py-20 px-6 sm:px-12">
           <div className="max-w-[1400px] mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-16 sm:mb-20">
               <div className="space-y-5 sm:space-y-6">
