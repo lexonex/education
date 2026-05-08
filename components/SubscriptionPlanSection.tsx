@@ -6,6 +6,7 @@ import { useDataStore } from '../store/dataStore';
 
 const SubscriptionPlanSection: React.FC = () => {
   const { subscriptionPlans } = useDataStore();
+  const [selectedVariants, setSelectedVariants] = React.useState<Record<string, string>>({}); // planId -> variantId
 
   if (!subscriptionPlans || subscriptionPlans.length === 0) return null;
 
@@ -28,40 +29,69 @@ const SubscriptionPlanSection: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10">
-        {subscriptionPlans.map((plan, i) => (
-          <div key={i} className={`group relative flex flex-col ${plan.isPopular ? 'z-10' : ''}`}>
-            
-            {/* Main Card Container with Clip Path */}
-            <div className={`relative flex-1 bg-[#050505] border transition-all duration-500 flex flex-col overflow-hidden ${plan.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-white/30'}`} 
-                 style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
+        {subscriptionPlans.map((plan, i) => {
+          const variants = plan.variants || [];
+          const selectedVariantId = selectedVariants[plan.id] || (variants.length > 0 ? variants[0].id : null);
+          const currentVariant = variants.find(v => v.id === selectedVariantId);
+          
+          const displayPrice = currentVariant ? currentVariant.price : plan.price;
+          const displayDuration = currentVariant ? currentVariant.durationDays : plan.durationDays;
+
+          return (
+            <div key={i} className={`group relative flex flex-col ${plan.isPopular ? 'z-10' : ''}`}>
               
-              {plan.isPopular && (
-                <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em] z-30 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 10% 100%)' }}>RECOMMENDED</div>
-              )}
+              <div className={`relative flex-1 bg-[#050505] border transition-all duration-500 flex flex-col overflow-hidden ${plan.isPopular ? 'border-yellow-500/30 group-hover:border-yellow-500' : 'border-white/10 group-hover:border-white/30'}`} 
+                   style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
+                
+                {plan.isPopular && (
+                  <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 text-[8px] sm:text-[9px] font-heading font-black uppercase tracking-[0.2em] z-30 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 10% 100%)' }}>RECOMMENDED</div>
+                )}
 
-              <div className="px-4 py-6 sm:p-8 relative z-10 flex flex-col h-full">
-                {/* Index Number */}
-                <div className="absolute top-4 right-6 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black text-white/[0.02] group-hover:text-accent/[0.05] transition-colors leading-none select-none">
-                  {(i + 1).toString().padStart(2, '0')}
-                </div>
-
-                <div className="relative z-10 flex flex-col mb-4 sm:mb-6">
-                  <h4 className={`font-heading text-xl sm:text-2xl font-black uppercase tracking-tighter mb-1 ${plan.isPopular ? 'text-yellow-500' : 'text-white'}`}>{plan.name}</h4>
-                  {plan.subtitle && (
-                    <p className="text-[10px] sm:text-[11px] text-accent/80 font-heading uppercase tracking-widest mb-2 italic">{plan.subtitle}</p>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <Clock size={10} className="text-muted/40" />
-                    <p className="text-[8px] sm:text-[9px] text-muted uppercase tracking-[0.2em] font-bold">{plan.durationDays} DAYS DURATION</p>
+                <div className="px-4 py-6 sm:p-8 relative z-10 flex flex-col h-full">
+                  <div className="absolute top-4 right-6 sm:top-6 sm:right-8 font-heading text-[40px] sm:text-[60px] font-black text-white/[0.02] group-hover:text-accent/[0.05] transition-colors leading-none select-none">
+                    {(i + 1).toString().padStart(2, '0')}
                   </div>
-                </div>
 
-                <div className="mb-6 sm:mb-8">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl sm:text-5xl font-heading font-black text-white tracking-tighter">${(Number(plan.price) || 0).toLocaleString('en-US')}</span>
-                    <span className="text-[9px] sm:text-[10px] font-heading text-muted uppercase tracking-[0.3em] font-bold">/ {plan.currency}</span>
+                  <div className="relative z-10 flex flex-col mb-4 sm:mb-6">
+                    <h4 className={`font-heading text-xl sm:text-2xl font-black uppercase tracking-tighter mb-1 ${plan.isPopular ? 'text-yellow-500' : 'text-white'}`}>{plan.name}</h4>
+                    {plan.subtitle && (
+                      <p className="text-[10px] sm:text-[11px] text-accent/80 font-heading uppercase tracking-widest mb-2 italic">{plan.subtitle}</p>
+                    )}
+                    
+                    {/* Variant Selector */}
+                    {variants.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-4 mt-2">
+                        {variants.map(v => (
+                          <button
+                            key={v.id}
+                            onClick={() => setSelectedVariants({ ...selectedVariants, [plan.id]: v.id })}
+                            className={`px-3 py-1.5 text-[8px] font-heading font-black uppercase tracking-widest transition-all
+                              ${selectedVariantId === v.id 
+                                ? (plan.isPopular ? 'bg-yellow-500 text-black' : 'bg-accent text-black')
+                                : 'bg-white/5 text-muted hover:bg-white/10 hover:text-white'
+                              }`}
+                            style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}
+                          >
+                            {v.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <Clock size={10} className="text-muted/40" />
+                      <p className="text-[8px] sm:text-[9px] text-muted uppercase tracking-[0.2em] font-bold">
+                        {displayDuration === 0 ? 'LIFETIME ACCESS' : `${displayDuration} DAYS DURATION`}
+                      </p>
+                    </div>
                   </div>
-                </div>
+
+                  <div className="mb-6 sm:mb-8 text-left">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl sm:text-5xl font-heading font-black text-white tracking-tighter">${(Number(displayPrice) || 0).toLocaleString('en-US')}</span>
+                      <span className="text-[9px] sm:text-[10px] font-heading text-muted uppercase tracking-[0.3em] font-bold">/ {plan.currency}</span>
+                    </div>
+                  </div>
 
                 <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 group/desc min-h-[80px]">
                    <div className="flex items-center gap-2">
@@ -124,7 +154,9 @@ const SubscriptionPlanSection: React.FC = () => {
                   )}
                 </div>
 
-                <div className="">
+                </div>
+
+                <div className="mt-auto">
                   <Link to="/login" className="w-full">
                     <button 
                       className={`w-full py-4 sm:py-5 font-heading text-[10px] sm:text-[11px] font-black tracking-[0.4em] sm:tracking-[0.5em] uppercase transition-all flex items-center justify-center gap-3 active:scale-95 ${plan.isPopular ? 'bg-yellow-500 text-black hover:bg-yellow-400 shadow-glow-sm' : 'bg-white text-black hover:bg-accent'}`}
@@ -136,8 +168,8 @@ const SubscriptionPlanSection: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
