@@ -368,8 +368,9 @@ const SubscriptionPlanManager: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.name || formData.price === '') {
-      addNotification('ERROR', 'MISSING_DATA', 'Please fill all required fields.');
+    const hasPrice = formData.price !== '' || formData.variants.length > 0;
+    if (!formData.name || !hasPrice) {
+      addNotification('ERROR', 'MISSING_DATA', 'Please fill Name and Price.');
       return;
     }
 
