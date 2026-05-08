@@ -210,13 +210,22 @@ export interface SubscriptionFeature {
   status?: 'STANDARD' | 'POPULAR' | 'UNAVAILABLE' | 'SPECIAL';
 }
 
+export interface SubscriptionVariant {
+  id: string;
+  label: string; // e.g. "1 Month", "3 Months", "Lifetime"
+  price: number;
+  durationDays: number;
+  isPopular?: boolean;
+}
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
   subtitle?: string;
-  price: number;
+  price: number; // Kept for backward compatibility
   currency: string;
-  durationDays: number;
+  durationDays: number; // Kept for backward compatibility
+  variants?: SubscriptionVariant[]; // New: Supports multiple time/price options
   features: SubscriptionFeature[];
   keyFeatures?: SubscriptionFeature[];
   description: string;
