@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDataStore } from '../store/dataStore';
 import { useUIStore } from '../store/uiStore';
-import { SubscriptionPlan, SubscriptionFeature } from '../types';
+import { SubscriptionPlan, SubscriptionFeature, SubscriptionVariant } from '../types';
 import { 
   Plus, 
   Trash2, 
@@ -25,7 +25,9 @@ import {
   Minus,
   GripVertical,
   GripHorizontal,
-  ArrowRight
+  ArrowRight,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import {
@@ -66,12 +68,21 @@ const SortablePlanItem = ({
     isDragging
   } = useSortable({ id: p.id });
 
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
+    p.variants && p.variants.length > 0 ? p.variants[0].id : null
+  );
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 50 : 'auto',
     opacity: isDragging ? 0.5 : 1,
   };
+
+  const currentVariant = p.variants?.find(v => v.id === selectedVariantId);
+  const displayPrice = currentVariant ? currentVariant.price : p.price;
+  const displayDuration = currentVariant ? currentVariant.durationDays : p.durationDays;
+  const displayLabel = currentVariant ? currentVariant.label : null;
 
   return (
     <div ref={setNodeRef} style={style} className="group relative flex flex-col">
@@ -103,18 +114,42 @@ const SortablePlanItem = ({
             {p.subtitle && (
               <p className="text-[10px] sm:text-[11px] text-accent/80 font-heading uppercase tracking-widest mb-2 italic">{p.subtitle}</p>
             )}
+            
+            {/* Variant Selector */}
+            {p.variants && p.variants.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-4 mt-2">
+                {p.variants.map(v => (
+                  <button
+                    key={v.id}
+                    onClick={() => setSelectedVariantId(v.id)}
+                    className={`px-3 py-1.5 text-[8px] font-heading font-black uppercase tracking-widest transition-all
+                      ${selectedVariantId === v.id 
+                        ? (p.isPopular ? 'bg-yellow-500 text-black' : 'bg-accent text-black')
+                        : 'bg-white/5 text-muted hover:bg-white/10 hover:text-white'
+                      }`}
+                    style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)' }}
+                  >
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
               <Clock size={10} className="text-muted/40" />
-              <p className="text-[8px] sm:text-[9px] text-muted uppercase tracking-[0.2em] font-bold">{p.durationDays} DAYS DURATION</p>
+              <p className="text-[8px] sm:text-[9px] text-muted uppercase tracking-[0.2em] font-bold">
+                {displayDuration === 0 ? 'LIFETIME ACCESS' : `${displayDuration} DAYS DURATION`}
+              </p>
             </div>
           </div>
 
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-6 sm:mb-8 text-left">
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl sm:text-5xl font-heading font-black text-white tracking-tighter">${(Number(p.price) || 0).toLocaleString('en-US')}</span>
+              <span className="text-4xl sm:text-5xl font-heading font-black text-white tracking-tighter">${(Number(displayPrice) || 0).toLocaleString('en-US')}</span>
               <span className="text-[9px] sm:text-[10px] font-heading text-muted uppercase tracking-[0.3em] font-bold">/ {p.currency}</span>
             </div>
           </div>
+
 
           <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 group/desc min-h-[80px]">
              <div className="flex items-center gap-2">
@@ -216,6 +251,7 @@ const SubscriptionPlanManager: React.FC = () => {
   const { subscriptionPlans, addSubscriptionPlan, updateSubscriptionPlan, deleteSubscriptionPlan, updateSubscriptionPlansOrder } = useDataStore();
   const { addNotification, setGlobalLoading } = useUIStore();
   
+  const formRef = React.useRef<HTMLDivElement>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -228,6 +264,14 @@ const SubscriptionPlanManager: React.FC = () => {
       setLocalPlans(subscriptionPlans);
     }
   }, [subscriptionPlans, hasOrderChanged]);
+
+  useEffect(() => {
+    if ((isAdding || editingId) && formRef.current) {
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [isAdding, editingId]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -269,12 +313,22 @@ const SubscriptionPlanManager: React.FC = () => {
     price: '' as string | number,
     currency: 'USD',
     durationDays: '' as string | number,
+    variants: [] as SubscriptionVariant[],
     features: [] as SubscriptionFeature[],
     keyFeatures: [] as SubscriptionFeature[],
     description: '',
     isPopular: false,
     status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE'
   });
+
+  const [variantInput, setVariantInput] = useState({
+    label: '',
+    price: '',
+    durationDays: '',
+    isLifetime: false
+  });
+
+  const [editingVariantId, setEditingVariantId] = useState<string | null>(null);
 
   const [featureInput, setFeatureInput] = useState('');
   const [keyFeatureInput, setKeyFeatureInput] = useState('');
@@ -321,8 +375,9 @@ const SubscriptionPlanManager: React.FC = () => {
 
     const planData = {
       ...formData,
-      price: Number(formData.price) || 0,
-      durationDays: Number(formData.durationDays) || 0
+      price: formData.variants.length > 0 ? Number(formData.variants[0].price) : (Number(formData.price) || 0),
+      durationDays: formData.variants.length > 0 ? Number(formData.variants[0].durationDays) : (Number(formData.durationDays) || 0),
+      variants: formData.variants
     };
 
     setGlobalLoading(true);
@@ -349,6 +404,7 @@ const SubscriptionPlanManager: React.FC = () => {
       price: '',
       currency: 'USD',
       durationDays: '',
+      variants: [],
       features: [],
       keyFeatures: [],
       description: '',
@@ -370,12 +426,17 @@ const SubscriptionPlanManager: React.FC = () => {
     setFormData({
       name: 'Starter Plan',
       subtitle: 'Best for beginners',
-      price: '25', // Default placeholder price
+      price: '25', // Fallback base price
       currency: 'USD',
-      durationDays: '120', // User example duration
+      durationDays: '30', // Fallback duration
       description: 'Best for beginners starting their trading journey.',
       isPopular: false,
       status: 'ACTIVE',
+      variants: [
+        { id: `VAR-1-${Date.now()}`, label: '1 MONTH', price: 25, durationDays: 30 },
+        { id: `VAR-2-${Date.now()}`, label: '3 MONTHS', price: 65, durationDays: 90 },
+        { id: `VAR-3-${Date.now()}`, label: '1 YEAR', price: 220, durationDays: 365 }
+      ],
       features: [
         { text: 'Basic to advanced binary trading course', isAvailable: true },
         { text: 'Text + image based lessons', isAvailable: true },
@@ -419,6 +480,7 @@ const SubscriptionPlanManager: React.FC = () => {
       price: p.price.toString(),
       currency: p.currency,
       durationDays: p.durationDays.toString(),
+      variants: p.variants || [],
       features: normalizedFeatures,
       keyFeatures: normalizedKeyFeatures,
       description: p.description,
@@ -427,6 +489,67 @@ const SubscriptionPlanManager: React.FC = () => {
     });
     setEditingId(p.id);
     setIsAdding(true);
+  };
+
+  const addVariant = () => {
+    if (variantInput.label && variantInput.price && (variantInput.isLifetime || variantInput.durationDays)) {
+      if (editingVariantId) {
+        setFormData({
+          ...formData,
+          variants: formData.variants.map(v => v.id === editingVariantId ? {
+            ...v,
+            label: variantInput.label,
+            price: Number(variantInput.price),
+            durationDays: variantInput.isLifetime ? 0 : Number(variantInput.durationDays)
+          } : v)
+        });
+        setEditingVariantId(null);
+      } else {
+        const newVariant = {
+          id: `VAR-${Date.now()}`,
+          label: variantInput.label,
+          price: Number(variantInput.price),
+          durationDays: variantInput.isLifetime ? 0 : Number(variantInput.durationDays)
+        };
+        setFormData({
+          ...formData,
+          variants: [...formData.variants, newVariant]
+        });
+      }
+      setVariantInput({ label: '', price: '', durationDays: '', isLifetime: false });
+    } else {
+      addNotification('ERROR', 'INVALID_VARIANT', 'Please fill all variant fields.');
+    }
+  };
+
+  const startEditVariant = (v: SubscriptionVariant) => {
+    setEditingVariantId(v.id);
+    setVariantInput({
+      label: v.label,
+      price: v.price.toString(),
+      durationDays: v.durationDays === 0 ? '' : v.durationDays.toString(),
+      isLifetime: v.durationDays === 0
+    });
+  };
+
+  const cancelEditVariant = () => {
+    setEditingVariantId(null);
+    setVariantInput({ label: '', price: '', durationDays: '', isLifetime: false });
+  };
+
+  const removeVariant = (id: string) => {
+    setFormData({
+      ...formData,
+      variants: formData.variants.filter(v => v.id !== id)
+    });
+  };
+
+  const moveVariant = (idx: number, direction: 'UP' | 'DOWN') => {
+    const newIdx = direction === 'UP' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= formData.variants.length) return;
+    const newVariants = [...formData.variants];
+    [newVariants[idx], newVariants[newIdx]] = [newVariants[newIdx], newVariants[idx]];
+    setFormData({ ...formData, variants: newVariants });
   };
 
   const addFeature = () => {
@@ -479,6 +602,22 @@ const SubscriptionPlanManager: React.FC = () => {
 
   const removeKeyFeature = (idx: number) => {
     setFormData({ ...formData, keyFeatures: formData.keyFeatures.filter((_, i) => i !== idx) });
+  };
+
+  const moveFeature = (idx: number, direction: 'UP' | 'DOWN') => {
+    const newIdx = direction === 'UP' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= formData.features.length) return;
+    const newFeatures = [...formData.features];
+    [newFeatures[idx], newFeatures[newIdx]] = [newFeatures[newIdx], newFeatures[idx]];
+    setFormData({ ...formData, features: newFeatures });
+  };
+
+  const moveKeyFeature = (idx: number, direction: 'UP' | 'DOWN') => {
+    const newIdx = direction === 'UP' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= formData.keyFeatures.length) return;
+    const newKeyFeatures = [...formData.keyFeatures];
+    [newKeyFeatures[idx], newKeyFeatures[newIdx]] = [newKeyFeatures[newIdx], newKeyFeatures[idx]];
+    setFormData({ ...formData, keyFeatures: newKeyFeatures });
   };
 
   const startEditFeature = (idx: number, text: string) => {
@@ -614,345 +753,336 @@ const SubscriptionPlanManager: React.FC = () => {
         </button>
       </div>
 
-      {isAdding && (
-        <div className="relative z-10 bg-black/60 border border-accent/20 p-4 sm:p-8 animate-in slide-in-from-top-4 duration-500" style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)' }}>
-          <div className="flex items-center justify-between mb-6 sm:mb-8 border-b border-white/5 pb-4">
-            <h3 className="font-heading text-xs sm:text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
-              <Cpu size={18} className="text-accent" /> {editingId ? 'EDIT_PLAN_NODE' : 'INITIALIZE_NEW_PLAN'}
-            </h3>
-            <button onClick={resetForm} className="text-muted hover:text-white transition-colors"><X size={20}/></button>
+      {(isAdding || editingId) && (
+        <div ref={formRef} className="relative z-20 bg-[#050505] border border-white/10 p-6 sm:p-10 mb-12 animate-in slide-in-from-top-4 duration-500 shadow-glow-sm scroll-mt-20"
+             style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}>
+          
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+             <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                   <Activity size={20} className="animate-pulse" />
+                </div>
+                <h3 className="font-heading text-lg font-black text-white uppercase tracking-[0.2em]">
+                   {editingId ? 'PLAN_RECONFIGURATION' : 'INITIALIZE_NEW_PLAN'}
+                </h3>
+             </div>
+             <button onClick={resetForm} className="p-2 text-muted hover:text-white transition-colors" title="Close Panel">
+                <X size={20} />
+             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-            <div className="space-y-4 sm:space-y-6">
-              <div className="space-y-2.5 group">
-                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
-                  <Database size={14} className="text-accent/40 group-focus-within:text-accent" /> PLAN_NAME
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-16">
+            <div className="space-y-8">
+              {/* Basic Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2.5 group">
+                  <label className="text-[9px] font-heading text-muted/60 uppercase tracking-widest pl-1">NAME</label>
                   <input 
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase text-white" 
-                    style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                    placeholder="e.g. PRO_TRADER, ENTERPRISE_GRID"
+                    className="w-full bg-white/[0.03] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 text-white uppercase"
+                    placeholder="PLAN_NAME"
                   />
-                  <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
                 </div>
-              </div>
-
-              <div className="space-y-2.5 group">
-                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
-                  <Target size={14} className="text-accent/40 group-focus-within:text-accent" /> SUBTITLE
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
+                <div className="space-y-2.5 group">
+                  <label className="text-[9px] font-heading text-muted/60 uppercase tracking-widest pl-1">SUBTITLE</label>
                   <input 
                     value={formData.subtitle}
                     onChange={e => setFormData({...formData, subtitle: e.target.value})}
-                    className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase text-white" 
-                    style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                    placeholder="e.g. Best for beginners"
+                    className="w-full bg-white/[0.03] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 text-white uppercase"
+                    placeholder="DESCRIPTOR"
                   />
-                  <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2.5 group">
-                  <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
-                    <DollarSign size={14} className="text-accent/40 group-focus-within:text-accent" /> PRICE
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
-                    <input 
-                      type="text"
-                      value={formatWithCommas(formData.price)}
-                      onChange={handlePriceChange}
-                      className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 text-white" 
-                      style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                    />
-                    <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
-                  </div>
-                </div>
-                <div className="space-y-2.5 group">
-                  <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
-                    <Clock size={14} className="text-accent/40 group-focus-within:text-accent" /> DURATION_(DAYS)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
-                    <input 
-                      type="text"
-                      value={formData.durationDays}
-                      onChange={handleDurationChange}
-                      className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 text-white" 
-                      style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                    />
-                    <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
-                  </div>
                 </div>
               </div>
 
               <div className="space-y-2.5 group">
-                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
-                  <Edit3 size={14} className="text-accent/40 group-focus-within:text-accent" /> DESCRIPTION
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
-                  <textarea 
-                    value={formData.description}
-                    onChange={e => setFormData({...formData, description: e.target.value})}
-                    className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase h-[100px] resize-none text-white custom-scrollbar" 
-                    style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                    placeholder="ENTER PLAN DETAILS..."
-                  />
-                  <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                <label className="text-[9px] font-heading text-muted/60 uppercase tracking-widest pl-1">DESCRIPTION</label>
+                <textarea 
+                  rows={3}
+                  value={formData.description}
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  className="w-full bg-white/[0.03] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 text-white uppercase resize-none"
+                  placeholder="EXECUTIVE_SUMMARY"
+                />
+              </div>
+
+              {/* Variants Manager */}
+              <div className="space-y-6 pt-6 border-t border-white/5">
+                <div className="flex items-center justify-between">
+                   <p className="text-[10px] font-heading text-accent font-black uppercase tracking-widest">TIME_VARIANTS</p>
+                   {editingVariantId && (
+                     <button onClick={cancelEditVariant} className="text-[8px] font-heading text-error uppercase tracking-widest hover:underline">CANCEL_EDIT</button>
+                   )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                   <div className="space-y-1">
+                      <label className="text-[7px] font-heading text-muted uppercase tracking-[0.2em] pl-1">LABEL</label>
+                      <input 
+                        placeholder="e.g. 1 MO"
+                        value={variantInput.label}
+                        onChange={e => setVariantInput({...variantInput, label: e.target.value})}
+                        className="w-full bg-white/5 border border-white/10 p-3 text-[10px] font-heading outline-none focus:border-accent/50 text-white uppercase"
+                      />
+                   </div>
+                   <div className="space-y-1">
+                      <label className="text-[7px] font-heading text-muted uppercase tracking-[0.2em] pl-1">PRICE</label>
+                      <div className="relative">
+                        <input 
+                          type="number"
+                          placeholder="PRICE"
+                          value={variantInput.price}
+                          onChange={e => setVariantInput({...variantInput, price: e.target.value})}
+                          className="w-full bg-white/5 border border-white/10 p-3 text-[10px] font-heading outline-none focus:border-accent/50 text-white"
+                        />
+                        <DollarSign size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted/30" />
+                      </div>
+                   </div>
+                   <div className="space-y-1">
+                      <label className="text-[7px] font-heading text-muted uppercase tracking-[0.2em] pl-1">DURATION (DAYS)</label>
+                      <div className="relative">
+                        <input 
+                          type="number"
+                          placeholder="DAYS"
+                          disabled={variantInput.isLifetime}
+                          value={variantInput.isLifetime ? '' : variantInput.durationDays}
+                          onChange={e => setVariantInput({...variantInput, durationDays: e.target.value})}
+                          className={`w-full bg-white/5 border border-white/10 p-3 text-[10px] font-heading outline-none focus:border-accent/50 text-white ${variantInput.isLifetime ? 'opacity-30' : ''}`}
+                        />
+                        <Clock size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted/30" />
+                      </div>
+                   </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                     <div className={`w-10 h-5 border border-white/10 relative transition-all ${variantInput.isLifetime ? 'bg-accent' : 'bg-black'}`}>
+                        <input type="checkbox" className="hidden" checked={variantInput.isLifetime} onChange={e => setVariantInput({...variantInput, isLifetime: e.target.checked})} />
+                        <div className={`absolute top-0.5 bottom-0.5 w-3.5 bg-white transition-all ${variantInput.isLifetime ? 'right-0.5' : 'left-0.5'}`}></div>
+                     </div>
+                     <span className="text-[8px] font-heading text-muted uppercase tracking-widest">LIFETIME_BYPASS</span>
+                  </label>
+                  <button onClick={addVariant} className="px-6 py-3 bg-white text-black font-heading text-[9px] font-black uppercase tracking-widest hover:bg-accent transition-all active:scale-95">
+                    {editingVariantId ? 'UPDATE_VARIANT' : 'ADD_VARIANT'}
+                  </button>
+                </div>
+
+                <div className="space-y-2 mt-4 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
+                   {formData.variants.map((v, idx) => (
+                     <div key={v.id} className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 group/v">
+                        <div className="flex items-center gap-4">
+                           <div className="flex flex-col gap-0.5">
+                              <button onClick={() => moveVariant(idx, 'UP')} disabled={idx === 0} className="text-white/10 hover:text-accent disabled:opacity-0"><ChevronUp size={10}/></button>
+                              <button onClick={() => moveVariant(idx, 'DOWN')} disabled={idx === formData.variants.length - 1} className="text-white/10 hover:text-accent disabled:opacity-0"><ChevronDown size={10}/></button>
+                           </div>
+                           <span className="text-[10px] font-heading text-white uppercase">{v.label}</span>
+                           <span className="text-[10px] font-heading text-accent">${v.price}</span>
+                           <span className="text-[8px] font-heading text-muted/60 uppercase">{v.durationDays === 0 ? 'LIFETIME' : `${v.durationDays}d`}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <button onClick={() => startEditVariant(v)} className="p-1.5 text-muted hover:text-accent transition-colors" title="Edit Variant"><Edit3 size={12}/></button>
+                           <button onClick={() => removeVariant(v.id)} className="p-1.5 text-muted hover:text-error transition-colors" title="Remove Variant"><Trash2 size={12}/></button>
+                        </div>
+                     </div>
+                   ))}
+                   {formData.variants.length === 0 && (
+                     <div className="py-6 border border-dashed border-white/5 flex flex-col items-center justify-center opacity-20">
+                        <Clock size={20} className="mb-2" />
+                        <p className="text-[8px] font-heading uppercase tracking-widest">NO_VARIANTS_DEFINED</p>
+                     </div>
+                   )}
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4 sm:space-y-6">
-              <div className="space-y-2.5 group">
-                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1 group-focus-within:text-accent transition-colors">
-                  <Layers size={14} className="text-accent/40 group-focus-within:text-accent" /> FEATURES
-                </label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
+            <div className="space-y-8">
+               {/* Features */}
+               <div className="space-y-4">
+                  <label className="text-[10px] font-heading text-accent font-black uppercase tracking-widest pl-1">FEATURE_PROTOCOL</label>
+                  <div className="flex gap-2">
                     <input 
                       value={featureInput}
                       onChange={e => setFeatureInput(e.target.value)}
-                      onKeyPress={e => e.key === 'Enter' && addFeature()}
-                      className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase text-white" 
-                      style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                      placeholder="ADD FEATURE..."
+                      onKeyDown={e => e.key === 'Enter' && addFeature()}
+                      className="flex-1 bg-white/[0.03] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 text-white uppercase"
+                      placeholder="NEW_CAPABILITY"
                     />
-                    <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
+                    <button onClick={addFeature} className="px-6 bg-white text-black font-heading text-[9px] font-black uppercase tracking-widest hover:bg-accent transition-all">ADD</button>
                   </div>
-                  <button onClick={addFeature} className="px-4 sm:px-6 bg-white text-black font-heading text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-accent transition-all" style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}>ADD</button>
-                </div>
-                <div className="space-y-2 mt-4 max-h-[250px] overflow-y-auto custom-scrollbar">
-                  {formData.features.map((f, i) => (
-                    <div key={i} className="flex flex-col gap-2 p-2 sm:p-3 bg-white/5 border border-white/5 group/feat">
-                      {editingFeatureIdx === i ? (
-                        <div className="flex gap-2">
-                          <input 
-                            value={editingFeatureText}
-                            onChange={e => setEditingFeatureText(e.target.value)}
-                            className="flex-1 bg-black border border-accent/30 p-2 text-[10px] font-heading outline-none uppercase text-white"
-                            autoFocus
-                          />
-                          <button onClick={() => saveFeatureEdit(i)} className="p-2 text-accent hover:bg-accent/10 transition-colors"><Check size={14}/></button>
-                          <button onClick={() => setEditingFeatureIdx(null)} className="p-2 text-muted hover:bg-white/10 transition-colors"><X size={14}/></button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3 flex-1">
-                            <button 
-                              onClick={() => toggleFeatureAvailability(i)}
-                              className={`p-1.5 transition-all ${f.isAvailable ? 'text-accent bg-accent/10' : 'text-red-500 bg-red-500/10'}`}
-                              title={f.isAvailable ? 'Available' : 'Unavailable'}
-                            >
-                              {f.isAvailable ? <Check size={14} /> : <X size={14} />}
-                            </button>
-                            <span className={`text-[9px] font-heading uppercase tracking-widest leading-none translate-y-[1px] ${f.isAvailable ? 'text-white' : 'text-red-500/60 line-through'}`}>{f.text}</span>
+                  <div className="max-h-[150px] overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                     {formData.features.map((f, i) => (
+                       <div key={i} className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5">
+                          <div className="flex items-center gap-2 overflow-hidden mr-2">
+                             <div className="flex flex-col gap-0.5">
+                                <button onClick={() => moveFeature(i, 'UP')} disabled={i === 0} className="text-white/5 hover:text-accent disabled:opacity-0"><ChevronUp size={10}/></button>
+                                <button onClick={() => moveFeature(i, 'DOWN')} disabled={i === formData.features.length - 1} className="text-white/5 hover:text-accent disabled:opacity-0"><ChevronDown size={10}/></button>
+                             </div>
+                             <button onClick={() => toggleFeatureAvailability(i)} className={f.isAvailable ? 'text-accent' : 'text-error'} title="Toggle Status">
+                                {f.isAvailable ? <Check size={14}/> : <X size={14}/>}
+                             </button>
+                             {editingFeatureIdx === i ? (
+                               <input 
+                                 autoFocus
+                                 value={editingFeatureText}
+                                 onChange={e => setEditingFeatureText(e.target.value)}
+                                 onBlur={() => saveFeatureEdit(i)}
+                                 onKeyDown={e => e.key === 'Enter' && saveFeatureEdit(i)}
+                                 className="flex-1 bg-white/10 border-b border-accent text-[9px] font-heading text-white uppercase outline-none px-1"
+                               />
+                             ) : (
+                               <span 
+                                 onClick={() => startEditFeature(i, f.text)}
+                                 className={`text-[9px] font-heading uppercase truncate cursor-pointer hover:text-white transition-colors ${f.isAvailable ? 'text-white/70' : 'text-muted/40 line-through'}`}>
+                                 {f.text}
+                               </span>
+                             )}
                           </div>
-                          <div className="flex items-center gap-1">
-                            <button 
-                              onClick={() => startEditFeature(i, f.text)}
-                              className="p-2 text-muted/40 hover:text-accent transition-colors"
-                            >
-                              <Edit3 size={12}/>
-                            </button>
-                            <button 
-                              onClick={() => removeFeature(i)} 
-                              className="p-2 text-error/40 hover:text-error transition-colors"
-                            >
-                              <Trash2 size={12}/>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+                          <button onClick={() => removeFeature(i)} className="text-muted/40 hover:text-error shrink-0"><Trash2 size={12}/></button>
+                       </div>
+                     ))}
+                  </div>
+               </div>
 
-              <div className="space-y-4 pt-4 border-t border-white/5">
-                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-heading text-muted/60 uppercase tracking-widest pl-1">
-                  <Zap size={14} className="text-yellow-500" /> KEY_FEATURES
-                </label>
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-3">
+               {/* Key Metrics */}
+               <div className="space-y-4">
+                  <label className="text-[10px] font-heading text-yellow-500 font-black uppercase tracking-widest pl-1">KPI_CONFIGURATION</label>
+                  <div className="space-y-3">
                     <input 
                       value={keyFeatureInput}
                       onChange={e => setKeyFeatureInput(e.target.value)}
-                      className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase text-white" 
-                      style={{ clipPath: 'polygon(0 0, 100% 0, 100% 10px, 100% 100%, 0 100%)' }}
-                      placeholder="e.g. Live Trading: No"
+                      className="w-full bg-white/[0.03] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 text-white uppercase"
+                      placeholder="e.g. LIVE_TRADING: NO"
                     />
-                    <div className="grid grid-cols-4 gap-2">
-                      {[
-                        { id: 'STANDARD', label: 'BLUE', color: 'bg-accent' },
-                        { id: 'UNAVAILABLE', label: 'RED', color: 'bg-red-500' },
-                        { id: 'POPULAR', label: 'YELLOW', color: 'bg-yellow-500' },
-                        { id: 'SPECIAL', label: 'GREEN', color: 'bg-green-500' }
-                      ].map(s => (
-                        <button 
-                          key={s.id}
-                          type="button"
-                          onClick={() => setKeyFeatureStatus(s.id as any)}
-                          className={`py-2 text-[7px] font-heading font-black tracking-widest uppercase transition-all flex flex-col items-center gap-1 border ${keyFeatureStatus === s.id ? 'border-white/40 bg-white/10 text-white' : 'border-transparent text-muted/40 hover:text-muted'}`}
-                        >
-                          <div className={`w-2 h-2 rounded-full ${s.color}`}></div>
-                          <span>{s.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <button type="button" onClick={addKeyFeature} className="w-full py-4 bg-white text-black font-heading text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] hover:bg-accent transition-all" style={{ clipPath: 'polygon(5% 0, 100% 0, 100% 70%, 95% 100%, 0 100%, 0 30%)' }}>ADD_KEY_FEATURE</button>
-                  </div>
-                  
-                  <div className="space-y-2 max-h-[250px] overflow-y-auto custom-scrollbar">
-                    {(formData.keyFeatures || []).map((f, i) => (
-                      <div key={i} className="flex flex-col gap-2 p-2 sm:p-3 bg-white/5 border border-white/5">
-                        {editingKeyFeatureIdx === i ? (
-                          <div className="space-y-3 p-1">
-                            <div className="flex gap-2">
-                              <input 
-                                value={editingKeyFeatureText}
-                                onChange={e => setEditingKeyFeatureText(e.target.value)}
-                                className="flex-1 bg-black border border-accent/30 p-2 text-[10px] font-heading outline-none uppercase text-white"
-                                autoFocus
-                              />
-                            </div>
-                            <div className="grid grid-cols-4 gap-1">
-                              {[
-                                { id: 'STANDARD', color: 'bg-accent' },
-                                { id: 'UNAVAILABLE', color: 'bg-red-500' },
-                                { id: 'POPULAR', color: 'bg-yellow-500' },
-                                { id: 'SPECIAL', color: 'bg-green-500' }
-                              ].map(s => (
-                                <button 
-                                  key={s.id}
-                                  type="button"
-                                  onClick={() => setEditingKeyFeatureStatus(s.id as any)}
-                                  className={`h-6 border transition-all flex items-center justify-center ${editingKeyFeatureStatus === s.id ? 'border-white/40 bg-white/10' : 'border-transparent'}`}
-                                >
-                                  <div className={`w-2 h-2 rounded-full ${s.color}`}></div>
-                                </button>
-                              ))}
-                            </div>
-                            <div className="flex justify-end gap-2">
-                               <button onClick={() => setEditingKeyFeatureIdx(null)} className="px-3 py-1 text-[8px] font-heading uppercase text-muted hover:text-white transition-colors">CANCEL</button>
-                               <button onClick={() => saveKeyFeatureEdit(i)} className="px-3 py-1 text-[8px] font-heading uppercase bg-white text-black font-bold">SAVE</button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 flex-1 overflow-hidden">
-                               <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                 f.status === 'UNAVAILABLE' ? 'bg-red-500' : 
-                                 f.status === 'POPULAR' ? 'bg-yellow-500' : 
-                                 f.status === 'SPECIAL' ? 'bg-green-500' : 'bg-accent'
+                    <div className="flex items-center justify-between gap-4">
+                       <div className="flex gap-1">
+                          {['STANDARD', 'POPULAR', 'UNAVAILABLE', 'SPECIAL'].map(s => (
+                            <button 
+                              key={s} 
+                              onClick={() => setKeyFeatureStatus(s as any)}
+                              className={`w-8 h-8 border transition-all flex items-center justify-center ${keyFeatureStatus === s ? 'border-white/40 bg-white/10' : 'border-white/5'}`}
+                              title={s}
+                            >
+                               <div className={`w-2 h-2 rounded-full ${
+                                 s === 'STANDARD' ? 'bg-accent' : 
+                                 s === 'POPULAR' ? 'bg-yellow-500' : 
+                                 s === 'UNAVAILABLE' ? 'bg-red-500' : 'bg-green-500'
                                }`}></div>
-                               <span className="text-[9px] font-heading text-white uppercase tracking-widest truncate">{f.text}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <button 
-                                onClick={() => startEditKeyFeature(i, f)}
-                                className="p-2 text-muted/40 hover:text-accent transition-colors"
-                              >
-                                <Edit3 size={12}/>
-                              </button>
-                              <button 
-                                type="button"
-                                onClick={() => removeKeyFeature(i)} 
-                                className="p-2 text-error/40 hover:text-error transition-colors"
-                              >
-                                <Trash2 size={12}/>
-                              </button>
-                            </div>
+                            </button>
+                          ))}
+                       </div>
+                       <button onClick={addKeyFeature} className="px-6 py-3 bg-white text-black font-heading text-[9px] font-black uppercase tracking-widest hover:bg-yellow-500 transition-all">ADD_KPI</button>
+                    </div>
+                  </div>
+                  <div className="max-h-[150px] overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                     {formData.keyFeatures.map((f, i) => (
+                       <div key={i} className={`flex items-center justify-between p-3 bg-white/[0.02] border ${editingKeyFeatureIdx === i ? 'border-accent/40' : 'border-white/5'}`}>
+                          <div className="flex items-center gap-3 overflow-hidden mr-2">
+                             <div className="flex flex-col gap-0.5">
+                                <button onClick={() => moveKeyFeature(i, 'UP')} disabled={i === 0} className="text-white/5 hover:text-accent disabled:opacity-0"><ChevronUp size={10}/></button>
+                                <button onClick={() => moveKeyFeature(i, 'DOWN')} disabled={i === formData.keyFeatures.length - 1} className="text-white/5 hover:text-accent disabled:opacity-0"><ChevronDown size={10}/></button>
+                             </div>
+                             <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                               f.status === 'UNAVAILABLE' ? 'bg-red-500' : 
+                               f.status === 'POPULAR' ? 'bg-yellow-500' : 
+                               f.status === 'SPECIAL' ? 'bg-green-500' : 'bg-accent'
+                             }`}></div>
+                             
+                             {editingKeyFeatureIdx === i ? (
+                               <div className="flex items-center gap-2 flex-1">
+                                 <input 
+                                    autoFocus
+                                    value={editingKeyFeatureText}
+                                    onChange={e => setEditingKeyFeatureText(e.target.value)}
+                                    className="flex-1 bg-white/10 border-b border-accent text-[9px] font-heading text-white uppercase outline-none px-1"
+                                 />
+                                 <div className="flex gap-1">
+                                    {['STANDARD', 'POPULAR', 'UNAVAILABLE', 'SPECIAL'].map(s => (
+                                      <button 
+                                        key={s} 
+                                        onClick={() => setEditingKeyFeatureStatus(s as any)}
+                                        className={`w-4 h-4 border transition-all flex items-center justify-center ${editingKeyFeatureStatus === s ? 'border-white/40 bg-white/10' : 'border-white/5'}`}
+                                      >
+                                         <div className={`w-1 h-1 rounded-full ${
+                                           s === 'STANDARD' ? 'bg-accent' : 
+                                           s === 'POPULAR' ? 'bg-yellow-500' : 
+                                           s === 'UNAVAILABLE' ? 'bg-red-500' : 'bg-green-500'
+                                         }`}></div>
+                                      </button>
+                                    ))}
+                                 </div>
+                                 <button onClick={() => saveKeyFeatureEdit(i)} className="text-accent underline text-[7px] font-heading uppercase">SAVE</button>
+                               </div>
+                             ) : (
+                               <span 
+                                 onClick={() => startEditKeyFeature(i, f)}
+                                 className="text-[9px] font-heading text-white/70 uppercase truncate cursor-pointer hover:text-white transition-colors">
+                                 {f.text}
+                               </span>
+                             )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          <div className="flex items-center gap-1">
+                             {editingKeyFeatureIdx === i ? (
+                               <button onClick={() => setEditingKeyFeatureIdx(null)} className="text-muted/40 hover:text-white"><X size={10}/></button>
+                             ) : (
+                               <button onClick={() => removeKeyFeature(i)} className="text-muted/40 hover:text-error"><Trash2 size={12}/></button>
+                             )}
+                          </div>
+                       </div>
+                     ))}
                   </div>
-                </div>
-              </div>
+               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[8px] sm:text-[9px] font-heading text-muted uppercase tracking-widest flex items-center gap-2">
-                    <Star size={12} className="text-accent" /> POPULAR_TAG
+               {/* Command Actions */}
+               <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/5">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                     <div className={`w-12 h-6 border border-white/10 relative transition-all ${formData.isPopular ? 'bg-yellow-500' : 'bg-black'}`}>
+                        <input type="checkbox" className="hidden" checked={formData.isPopular} onChange={e => setFormData({...formData, isPopular: e.target.checked})} />
+                        <div className={`absolute top-0.5 bottom-0.5 w-4 bg-white transition-all ${formData.isPopular ? 'right-0.5' : 'left-0.5'}`}></div>
+                     </div>
+                     <span className="text-[9px] font-heading text-muted uppercase tracking-[0.2em]">RECOMMENDED</span>
                   </label>
-                  <button 
-                    onClick={() => setFormData({...formData, isPopular: !formData.isPopular})}
-                    className={`w-full py-3 font-heading text-[8px] sm:text-[9px] tracking-widest font-black uppercase transition-all ${formData.isPopular ? 'bg-yellow-500 text-black' : 'bg-white/5 text-muted hover:bg-white/10'}`}
-                    style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
-                  >
-                    {formData.isPopular ? 'POPULAR' : 'STANDARD'}
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[8px] sm:text-[9px] font-heading text-muted uppercase tracking-widest flex items-center gap-2">
-                    <Activity size={12} className="text-accent" /> STATUS
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['ACTIVE', 'INACTIVE'].map(s => (
-                      <button 
-                        key={s}
-                        onClick={() => setFormData({...formData, status: s as any})}
-                        className={`py-3 font-heading text-[8px] sm:text-[9px] tracking-widest font-black uppercase transition-all ${formData.status === s ? 'bg-accent text-black' : 'bg-white/5 text-muted hover:bg-white/10'}`}
-                        style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
-                      >
-                        {s}
-                      </button>
-                    ))}
+
+                  <div className="flex items-center gap-4">
+                     <button onClick={resetForm} className="px-6 py-4 border border-white/10 text-muted font-heading text-[10px] font-black uppercase tracking-widest hover:text-white transition-all">ABORT</button>
+                     <button onClick={handleSave} className="px-8 py-4 bg-accent text-black font-heading text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all flex items-center gap-3 active:scale-95 shadow-glow-sm">
+                        <Save size={16}/> {editingId ? 'SYNC_NODE' : 'INITIALIZE'}
+                     </button>
                   </div>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <button 
-                  onClick={handleSave}
-                  className="w-full bg-white text-black py-4 sm:py-5 font-heading text-[9px] sm:text-[10px] font-black tracking-[0.5em] uppercase hover:bg-accent transition-all flex items-center justify-center gap-4 shadow-glow"
-                  style={{ clipPath: 'polygon(5% 0, 100% 0, 100% 70%, 95% 100%, 0 100%, 0 30%)' }}
-                >
-                  <Save size={18} /> {editingId ? 'SYNCHRONIZE_CHANGES' : 'INITIALIZE_PLAN'}
-                </button>
-              </div>
+               </div>
             </div>
           </div>
         </div>
       )}
 
-      <DndContext 
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext 
-          items={localPlans.map(p => p.id)}
-          strategy={verticalListSortingStrategy}
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12 pb-20 mt-12">
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
         >
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-            {localPlans.map((p, index) => (
+          <SortableContext 
+            items={localPlans.map(p => p.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {localPlans.map((p, i) => (
               <SortablePlanItem 
                 key={p.id} 
                 p={p} 
-                index={index}
-                startEdit={startEdit} 
-                setDeleteTarget={setDeleteTarget} 
+                index={i}
+                startEdit={startEdit}
+                setDeleteTarget={setDeleteTarget}
               />
             ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+          </SortableContext>
+        </DndContext>
+      </div>
 
       <ConfirmDialog 
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
+        title="DELETE_PLAN_PROTOCOL"
+        message="This operation is irreversible. All linked subscriptions will require manual node redirection. Confirm extraction?"
+        confirmLabel="CONFIRM_DELETE"
+        cancelLabel="ABORT"
         onConfirm={async () => {
           if (deleteTarget) {
             setGlobalLoading(true);
@@ -960,14 +1090,14 @@ const SubscriptionPlanManager: React.FC = () => {
               await deleteSubscriptionPlan(deleteTarget);
               setDeleteTarget(null);
               addNotification('SUCCESS', 'PURGED', 'Plan node erased from registry.');
+            } catch (err) {
+              addNotification('ERROR', 'SYS_ERR', 'Extraction failure detected.');
             } finally {
               setGlobalLoading(false);
             }
           }
         }}
-        title="PURGE_WARNING"
-        message="Are you certain you want to erase this subscription plan permanently?"
-        confirmLabel="PURGE"
+        onClose={() => setDeleteTarget(null)}
       />
     </div>
   );
