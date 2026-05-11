@@ -154,7 +154,7 @@ const SortablePlatformItem = ({
                  className="group/btn relative w-full py-4 sm:py-5 bg-white text-black font-heading text-[10px] sm:text-[11px] font-black tracking-[0.4em] sm:tracking-[0.5em] uppercase overflow-hidden transition-all hover:bg-accent active:scale-[0.98] flex items-center justify-center gap-3"
                  style={{ clipPath: 'polygon(0 0, 100% 0, 100% 65%, 88% 100%, 0 100%)' }}
                >
-                  <span className="relative z-10">INITIALIZE NODE</span>
+                  <span className="relative z-10">REGISTER ACCOUNT</span>
                   <ArrowRight size={14} className="relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                </a>
             </div>
