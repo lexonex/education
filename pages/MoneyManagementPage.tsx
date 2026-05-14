@@ -77,12 +77,12 @@ const MoneyManagementPage: React.FC = () => {
   const saveSettings = async (t: number, e: number, o: number) => {
     if (!user) return;
     try {
-      const q = query(collection(db, getPath('money_management_settings')), where('userId', '==', user.uid));
+      const q = query(collection(db, getPath('money management settings')), where('userId', '==', user.uid));
       const snap = await getDocs(q);
       if (snap.empty) {
-        await addDoc(collection(db, getPath('money_management_settings')), { userId: user.uid, totalEvents: t, expectedWins: e, odds: o });
+        await addDoc(collection(db, getPath('money management settings')), { userId: user.uid, totalEvents: t, expectedWins: e, odds: o });
       } else {
-        await updateDoc(doc(db, getPath('money_management_settings'), snap.docs[0].id), { totalEvents: t, expectedWins: e, odds: o });
+        await updateDoc(doc(db, getPath('money management settings'), snap.docs[0].id), { totalEvents: t, expectedWins: e, odds: o });
       }
     } catch (err) {
       console.error('Error saving settings:', err);
@@ -107,7 +107,7 @@ const MoneyManagementPage: React.FC = () => {
       await saveSettings(numTotalEvents, numExpectedWins, numOdds);
       
       // Generate Serial Number: SN: SES-XXXX (where XXXX is count + 100001)
-      const sessionsQuery = query(collection(db, getPath('money_management_sessions')), where('userId', '==', user.uid));
+      const sessionsQuery = query(collection(db, getPath('money management sessions')), where('userId', '==', user.uid));
       const sessionsSnap = await getDocs(sessionsQuery);
       const sessionCount = sessionsSnap.size;
       const serialNumber = `SN: SES-${(100001 + sessionCount).toString()}`;
@@ -146,7 +146,7 @@ const MoneyManagementPage: React.FC = () => {
         roi: Number(((finalCapital - numCapital) / numCapital * 100).toFixed(2))
       };
 
-      const docRef = await addDoc(collection(db, getPath('money_management_sessions')), {
+      const docRef = await addDoc(collection(db, getPath('money management sessions')), {
         ...newSession,
         createdAt: serverTimestamp()
       });
@@ -225,7 +225,7 @@ const MoneyManagementPage: React.FC = () => {
     };
 
     try {
-      await updateDoc(doc(db, getPath('money_management_sessions'), localSession.id), sessionUpdate);
+      await updateDoc(doc(db, getPath('money management sessions'), localSession.id), sessionUpdate);
       const updatedSession = { ...localSession, ...sessionUpdate } as MoneyManagementSession;
       setLocalSession(updatedSession);
       
@@ -258,7 +258,7 @@ const MoneyManagementPage: React.FC = () => {
           status: 'ACTIVE',
           completedAt: null
         };
-        await updateDoc(doc(db, getPath('money_management_sessions'), localSession.id), sessionUpdate);
+        await updateDoc(doc(db, getPath('money management sessions'), localSession.id), sessionUpdate);
         const updatedSession = { ...localSession, ...sessionUpdate } as MoneyManagementSession;
         setLocalSession(updatedSession);
         
@@ -267,7 +267,7 @@ const MoneyManagementPage: React.FC = () => {
           historySessions: state.historySessions.map(s => s.id === updatedSession.id ? updatedSession : s)
         }));
 
-        addLog('PROTOCOL_UNDO', user?.displayName || 'User', `Re-activated manually closed session ${localSession.serialNumber}`);
+        addLog('PROTOCOL UNDO', user?.displayName || 'User', `Re-activated manually closed session ${localSession.serialNumber}`);
         return;
       } catch (err) {
         console.error('Error re-activating session:', err);
@@ -313,7 +313,7 @@ const MoneyManagementPage: React.FC = () => {
       }
 
       // Reset the last trade to pending
-      const { outcome: _, ...restOfTrade } = lastCompletedTrade;
+      const { outcome:  , ...restOfTrade } = lastCompletedTrade;
       updatedTrades[updatedTrades.length - 1] = {
         ...restOfTrade,
         returnAmount: 0,
@@ -330,7 +330,7 @@ const MoneyManagementPage: React.FC = () => {
         completedAt: null
       };
 
-      await updateDoc(doc(db, getPath('money_management_sessions'), localSession.id), sessionUpdate);
+      await updateDoc(doc(db, getPath('money management sessions'), localSession.id), sessionUpdate);
       const updatedSession = { ...localSession, ...sessionUpdate } as MoneyManagementSession;
       setLocalSession(updatedSession);
       
@@ -340,7 +340,7 @@ const MoneyManagementPage: React.FC = () => {
         historySessions: state.historySessions.map(s => s.id === updatedSession.id ? updatedSession : s)
       }));
 
-      addLog('PROTOCOL_UNDO', user?.displayName || 'User', `Reverted trade #${lastCompletedTrade.tradeNo} in session ${localSession.serialNumber}`);
+      addLog('PROTOCOL UNDO', user?.displayName || 'User', `Reverted trade #${lastCompletedTrade.tradeNo} in session ${localSession.serialNumber}`);
       
     } catch (err) {
       console.error('Error undoing trade:', err);
@@ -357,7 +357,7 @@ const MoneyManagementPage: React.FC = () => {
     setGlobalLoading(true);
     try {
       const completedAt = new Date().toISOString();
-      await updateDoc(doc(db, getPath('money_management_sessions'), localSession.id), {
+      await updateDoc(doc(db, getPath('money management sessions'), localSession.id), {
         status: 'FAILED',
         completedAt
       });
@@ -376,7 +376,7 @@ const MoneyManagementPage: React.FC = () => {
         historySessions: state.historySessions.map(s => s.id === updatedSession.id ? updatedSession : s)
       }));
       
-      addLog('PROTOCOL_ABORT', user?.displayName || 'User', 'Manually terminated active MONEY_MANAGEMENT session.');
+      addLog('PROTOCOL ABORT', user?.displayName || 'User', 'Manually terminated active MONEY MANAGEMENT session.');
       setShowTerminateConfirm(false);
     } catch (err) {
       console.error('Error terminating session:', err);
@@ -413,9 +413,9 @@ const MoneyManagementPage: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
         <ShieldAlert size={64} className="text-error animate-pulse" />
-        <h2 className="text-2xl font-heading font-black uppercase tracking-widest text-error">ACCESS_DENIED</h2>
-        <p className="text-muted text-xs font-heading uppercase tracking-widest">SUBSCRIPTION_EXPIRED_OR_UNAUTHORIZED</p>
-        <button onClick={() => window.location.hash = '#/dashboard'} className="px-8 py-3 bg-white text-black font-heading text-[10px] font-black uppercase tracking-widest hover:bg-accent transition-all">RETURN_TO_BASE</button>
+        <h2 className="text-2xl font-heading font-black uppercase tracking-widest text-error">ACCESS DENIED</h2>
+        <p className="text-muted text-xs font-heading uppercase tracking-widest">SUBSCRIPTION EXPIRED OR UNAUTHORIZED</p>
+        <button onClick={() => window.location.hash = '#/dashboard'} className="px-8 py-3 bg-white text-black font-heading text-[10px] font-black uppercase tracking-widest hover:bg-accent transition-all">RETURN TO BASE</button>
       </div>
     );
   }
@@ -429,7 +429,7 @@ const MoneyManagementPage: React.FC = () => {
             <TrendingUp size={16} />
             <p className="text-[10px] font-heading tracking-[0.5em] uppercase font-black">MANAGEMENT</p>
           </div>
-          <h2 className="text-2xl sm:text-5xl font-heading font-black tracking-tighter text-white uppercase leading-none">MONEY_MANAGEMENT</h2>
+          <h2 className="text-2xl sm:text-5xl font-heading font-black tracking-tighter text-white uppercase leading-none">MONEY MANAGEMENT</h2>
         </div>
         
         <div className="hidden md:flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
@@ -477,15 +477,15 @@ const MoneyManagementPage: React.FC = () => {
       {/* Unified Stats Grid (Always at top) */}
       <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-4">
         {(localSession ? [
-          { label: 'CURRENT_BALANCE', val: `$${localSession.currentCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <DollarSign size={16}/>, desc: `INIT: $${localSession.initialCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: 'text-white' },
-          { label: 'TARGET_CAPITAL', val: `$${(localSession.finalCapital || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <Target size={16}/>, desc: `GOAL: +$${(localSession.netProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: 'text-accent' },
-          { label: 'TRADE_PROGRESS', val: `${localSession.wins}/${localSession.expectedWins}`, icon: <TrendingUp size={16}/>, desc: 'WINS_REQUIRED', color: 'text-yellow-500' },
-          { label: 'REMAINING_TRADES', val: `${Number(localSession.totalEvents) - (localSession.wins + localSession.losses)}`, icon: <RotateCcw size={16}/>, desc: `TOTAL: ${localSession.totalEvents}`, color: 'text-error' }
+          { label: 'CURRENT BALANCE', val: `$${localSession.currentCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <DollarSign size={16}/>, desc: `INIT: $${localSession.initialCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: 'text-white' },
+          { label: 'TARGET CAPITAL', val: `$${(localSession.finalCapital || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <Target size={16}/>, desc: `GOAL: +$${(localSession.netProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: 'text-accent' },
+          { label: 'TRADE PROGRESS', val: `${localSession.wins}/${localSession.expectedWins}`, icon: <TrendingUp size={16}/>, desc: 'WINS REQUIRED', color: 'text-yellow-500' },
+          { label: 'REMAINING TRADES', val: `${Number(localSession.totalEvents) - (localSession.wins + localSession.losses)}`, icon: <RotateCcw size={16}/>, desc: `TOTAL: ${localSession.totalEvents}`, color: 'text-error' }
         ] : [
-          { label: 'INITIAL_CAPITAL', val: `$${Number(capital || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <DollarSign size={16}/>, desc: 'STARTING_NODE', color: 'text-white' },
-          { label: 'TARGET_CAPITAL', val: `$${(previewFinal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <Target size={16}/>, desc: 'GOAL_YIELD', color: 'text-accent' },
-          { label: 'EXPECTED_PROFIT', val: `$${(previewProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <TrendingUp size={16}/>, desc: 'NET_GAIN', color: 'text-yellow-500' },
-          { label: 'WIN_PROBABILITY', val: `${(previewWinProb || 0).toFixed(0)}%`, icon: <Activity size={16}/>, desc: 'SUCCESS_RATE', color: 'text-emerald-500' },
+          { label: 'INITIAL CAPITAL', val: `$${Number(capital || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <DollarSign size={16}/>, desc: 'STARTING NODE', color: 'text-white' },
+          { label: 'TARGET CAPITAL', val: `$${(previewFinal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <Target size={16}/>, desc: 'GOAL YIELD', color: 'text-accent' },
+          { label: 'EXPECTED PROFIT', val: `$${(previewProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <TrendingUp size={16}/>, desc: 'NET GAIN', color: 'text-yellow-500' },
+          { label: 'WIN PROBABILITY', val: `${(previewWinProb || 0).toFixed(0)}%`, icon: <Activity size={16}/>, desc: 'SUCCESS RATE', color: 'text-emerald-500' },
         ]).map((s, i) => (
           <div key={i} className={`bg-surface/80 border border-white/5 p-2 sm:p-5 relative overflow-hidden group transition-all duration-500 flex flex-col justify-between min-h-[140px] sm:min-h-[180px] ${
             s.color === 'text-white' ? 'hover:border-white/40' : 
@@ -509,7 +509,7 @@ const MoneyManagementPage: React.FC = () => {
                   {s.icon}
                 </div>
                 <div className="text-right hidden sm:block">
-                  <p className="text-[7px] font-heading tracking-[0.4em] text-muted uppercase opacity-40">CH_{i.toString().padStart(2, '0')}</p>
+                  <p className="text-[7px] font-heading tracking-[0.4em] text-muted uppercase opacity-40">CH {i.toString().padStart(2, '0')}</p>
                   <p className={`text-[8px] font-heading tracking-widest uppercase font-black ${s.color}`}>{s.desc}</p>
                 </div>
               </div>
@@ -521,7 +521,7 @@ const MoneyManagementPage: React.FC = () => {
             </div>
 
             <div className="flex gap-1 mt-4 sm:mt-6">
-              {[...Array(8)].map((_, b) => (
+              {[...Array(8)].map(( , b) => (
                 <div key={b} className={`h-1 flex-1 transition-all duration-700 ${b <= 5 ? s.color.replace('text-', 'bg-') : 'bg-white/5'}`}></div>
               ))}
             </div>
@@ -567,14 +567,14 @@ const MoneyManagementPage: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-3 text-accent/60">
                     <Zap size={14} />
-                    <span className="text-[8px] font-heading font-black tracking-[0.5em] uppercase">SESSION_SETUP</span>
+                    <span className="text-[8px] font-heading font-black tracking-[0.5em] uppercase">SESSION SETUP</span>
                   </div>
-                  <h2 className="text-2xl sm:text-4xl font-heading font-black text-white tracking-tight uppercase">CREATE_SESSION</h2>
+                  <h2 className="text-2xl sm:text-4xl font-heading font-black text-white tracking-tight uppercase">CREATE SESSION</h2>
                   <p className="text-[9px] sm:text-[10px] text-muted/40 font-heading tracking-widest uppercase">Define parameters for automated management</p>
                 </div>
                 <div className="flex sm:flex items-center gap-4 px-4 sm:px-6 py-3 bg-white/[0.02] border border-white/5 w-fit">
                   <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                  <span className="text-[8px] sm:text-[9px] font-heading font-bold text-muted/60 uppercase tracking-[0.3em]">System_Ready</span>
+                  <span className="text-[8px] sm:text-[9px] font-heading font-bold text-muted/60 uppercase tracking-[0.3em]">System Ready</span>
                 </div>
               </div>
             </div>
@@ -585,12 +585,12 @@ const MoneyManagementPage: React.FC = () => {
                 {/* Identity Section */}
                 <div className="space-y-6 sm:space-y-8">
                   <div className="flex items-center gap-3 border-l-2 border-accent pl-4">
-                    <span className="text-[9px] sm:text-[10px] font-heading font-black text-white uppercase tracking-[0.4em]">01. SESSION_IDENTITY</span>
+                    <span className="text-[9px] sm:text-[10px] font-heading font-black text-white uppercase tracking-[0.4em]">01. SESSION IDENTITY</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-2 sm:space-y-3 group">
                       <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-focus-within:text-accent transition-colors">
-                        SESSION_NAME
+                        SESSION NAME
                       </label>
                       <div className="relative">
                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
@@ -599,7 +599,7 @@ const MoneyManagementPage: React.FC = () => {
                           value={sessionName}
                           onChange={(e) => setSessionName(e.target.value)}
                           className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase text-white"
-                          placeholder="IDENTIFIER_NODE..."
+                          placeholder="IDENTIFIER NODE..."
                           style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
                         />
                         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
@@ -616,7 +616,7 @@ const MoneyManagementPage: React.FC = () => {
                           value={sessionDescription}
                           onChange={(e) => setSessionDescription(e.target.value)}
                           className="w-full bg-white/[0.02] border border-white/10 p-4 text-[11px] font-heading outline-none focus:border-accent/50 transition-colors duration-300 placeholder:text-muted/10 uppercase text-white"
-                          placeholder="OPTIONAL_METADATA..."
+                          placeholder="OPTIONAL METADATA..."
                           style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
                         />
                         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-focus-within:border-accent transition-colors"></div>
@@ -628,12 +628,12 @@ const MoneyManagementPage: React.FC = () => {
                 {/* Financial Section */}
                 <div className="space-y-6 sm:space-y-8">
                   <div className="flex items-center gap-3 border-l-2 border-accent pl-4">
-                    <span className="text-[9px] sm:text-[10px] font-heading font-black text-white uppercase tracking-[0.4em]">02. FINANCIAL_MATRIX</span>
+                    <span className="text-[9px] sm:text-[10px] font-heading font-black text-white uppercase tracking-[0.4em]">02. FINANCIAL MATRIX</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-2 sm:space-y-3 group">
                       <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-focus-within:text-accent transition-colors">
-                        STARTING_BALANCE
+                        STARTING BALANCE
                       </label>
                       <div className="relative">
                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
@@ -672,7 +672,7 @@ const MoneyManagementPage: React.FC = () => {
                     </div>
                     <div className="space-y-2 sm:space-y-3 group">
                       <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-focus-within:text-accent transition-colors">
-                        MARKET_ODDS
+                        MARKET ODDS
                       </label>
                       <div className="relative">
                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
@@ -711,12 +711,12 @@ const MoneyManagementPage: React.FC = () => {
                 {/* Execution Section */}
                 <div className="space-y-6 sm:space-y-8">
                   <div className="flex items-center gap-3 border-l-2 border-accent pl-4">
-                    <span className="text-[9px] sm:text-[10px] font-heading font-black text-white uppercase tracking-[0.4em]">03. EXECUTION_LOGIC</span>
+                    <span className="text-[9px] sm:text-[10px] font-heading font-black text-white uppercase tracking-[0.4em]">03. EXECUTION LOGIC</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-2 sm:space-y-3 group">
                       <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-focus-within:text-accent transition-colors">
-                        TOTAL_STEPS
+                        TOTAL STEPS
                       </label>
                       <div className="relative">
                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
@@ -745,7 +745,7 @@ const MoneyManagementPage: React.FC = () => {
                     </div>
                     <div className="space-y-2 sm:space-y-3 group">
                       <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-focus-within:text-accent transition-colors">
-                        REQUIRED_WINS
+                        REQUIRED WINS
                       </label>
                       <div className="relative">
                         <div className="absolute inset-0 bg-accent/0 group-focus-within:bg-accent/[0.02] transition-all duration-500"></div>
@@ -783,7 +783,7 @@ const MoneyManagementPage: React.FC = () => {
                   }`}
                   style={{ clipPath: 'polygon(12% 0, 100% 0, 100% 65%, 88% 100%, 0 100%, 0 35%)' }}
                 >
-                  START_REAL_SESSION
+                  START REAL SESSION
                   <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -793,16 +793,16 @@ const MoneyManagementPage: React.FC = () => {
                 
                 <div className="space-y-6 sm:space-y-8">
                   <div className="flex items-center gap-3 border-l-2 border-accent pl-4">
-                    <span className="text-[9px] sm:text-[10px] font-heading font-black text-white uppercase tracking-[0.4em]">PROJECTION_ANALYSIS</span>
+                    <span className="text-[9px] sm:text-[10px] font-heading font-black text-white uppercase tracking-[0.4em]">PROJECTION ANALYSIS</span>
                   </div>
 
                   <div className="space-y-4">
                     {[
-                      { label: 'ALLOWED_LOSSES', val: (Number(totalEvents) - Number(expectedWins)).toLocaleString('en-US'), icon: <ShieldAlert size={14} />, color: 'text-error' },
-                      { label: 'FIRST_TRADE', val: `$${calculateBetAmount(Number(capital), Number(totalEvents), Number(expectedWins), Number(odds), previewV).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <Zap size={14}/>, color: 'text-white' },
-                      { label: 'TOTAL_PROFIT', val: `+$${(previewProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <TrendingUp size={14}/>, color: 'text-emerald-500' },
-                      { label: 'TOTAL_ROI', val: `${(previewROI || 0).toFixed(2)}%`, icon: <Percent size={14}/>, color: 'text-accent' },
-                      { label: 'BREAK_EVEN_%', val: `${((1 / Number(odds)) * 100).toFixed(2)}%`, icon: <Activity size={14} />, color: 'text-white' }
+                      { label: 'ALLOWED LOSSES', val: (Number(totalEvents) - Number(expectedWins)).toLocaleString('en-US'), icon: <ShieldAlert size={14} />, color: 'text-error' },
+                      { label: 'FIRST TRADE', val: `$${calculateBetAmount(Number(capital), Number(totalEvents), Number(expectedWins), Number(odds), previewV).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <Zap size={14}/>, color: 'text-white' },
+                      { label: 'TOTAL PROFIT', val: `+$${(previewProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <TrendingUp size={14}/>, color: 'text-emerald-500' },
+                      { label: 'TOTAL ROI', val: `${(previewROI || 0).toFixed(2)}%`, icon: <Percent size={14}/>, color: 'text-accent' },
+                      { label: 'BREAK EVEN %', val: `${((1 / Number(odds)) * 100).toFixed(2)}%`, icon: <Activity size={14} />, color: 'text-white' }
                     ].map((item, j) => (
                       <div key={j} className="flex items-center justify-between p-4 bg-black/40 border border-white/5">
                         <div className="flex items-center gap-3">
@@ -816,7 +816,7 @@ const MoneyManagementPage: React.FC = () => {
 
                   <div className="p-4 bg-accent/5 border border-accent/10">
                     <p className="text-[8px] font-heading text-accent uppercase tracking-widest leading-relaxed">
-                      SYSTEM_ANALYSIS_COMPLETE. MATHEMATICAL_MODELS_VERIFIED.
+                      SYSTEM ANALYSIS COMPLETE. MATHEMATICAL MODELS VERIFIED.
                     </p>
                   </div>
                 </div>
@@ -839,8 +839,8 @@ const MoneyManagementPage: React.FC = () => {
                     <div className="relative z-10 space-y-8">
                       <div className="flex justify-between items-center border-b border-white/5 pb-4">
                         <div className="space-y-1">
-                          <h3 className="text-xs font-heading font-black text-white uppercase tracking-widest">{localSession.name || 'CURRENT_TRADE'}</h3>
-                          <p className="text-[8px] text-muted uppercase tracking-widest font-medium">EXECUTION_PHASE</p>
+                          <h3 className="text-xs font-heading font-black text-white uppercase tracking-widest">{localSession.name || 'CURRENT TRADE'}</h3>
+                          <p className="text-[8px] text-muted uppercase tracking-widest font-medium">EXECUTION PHASE</p>
                         </div>
                         <div className="px-3 py-1 bg-accent/10 border border-accent/20 text-[9px] font-heading font-bold text-accent uppercase tracking-wider relative">
                           Live
@@ -850,7 +850,7 @@ const MoneyManagementPage: React.FC = () => {
                       </div>
                       
                       <div className="text-center py-6 bg-black/40 border border-white/5 relative group-hover:border-white/10 transition-colors">
-                        <div className="text-[10px] text-muted/60 uppercase tracking-[0.3em] mb-2 font-heading">INVESTMENT_AMOUNT</div>
+                        <div className="text-[10px] text-muted/60 uppercase tracking-[0.3em] mb-2 font-heading">INVESTMENT AMOUNT</div>
                         <div className="text-4xl sm:text-5xl font-mono font-black text-white tracking-tight">
                           ${localSession.trades[localSession.trades.length - 1].betAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
@@ -884,12 +884,12 @@ const MoneyManagementPage: React.FC = () => {
                           style={{ clipPath: 'polygon(5% 0, 100% 0, 100% 70%, 95% 100%, 0 100%, 0 30%)' }}
                         >
                           <Undo2 size={14} className="text-muted group-hover/btn:text-white transition-colors" />
-                          <span className="text-[9px] font-heading font-black uppercase tracking-[0.3em]">UNDO_PREVIOUS_STEP</span>
+                          <span className="text-[9px] font-heading font-black uppercase tracking-[0.3em]">UNDO PREVIOUS STEP</span>
                         </button>
                       ) : null}
 
                       <div className="flex justify-between items-center px-5 py-4 bg-black/40 border border-white/5 relative group-hover:border-white/10 transition-colors">
-                        <span className="text-[9px] font-heading text-muted/60 uppercase tracking-[0.3em]">EXPECTED_PROFIT</span>
+                        <span className="text-[9px] font-heading text-muted/60 uppercase tracking-[0.3em]">EXPECTED PROFIT</span>
                         <span className="text-lg font-mono font-black text-accent">
                           +${(localSession.trades[localSession.trades.length - 1].betAmount * (localSession.odds - 1)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
@@ -913,21 +913,21 @@ const MoneyManagementPage: React.FC = () => {
                         
                         <div className="space-y-2">
                           <h2 className="font-heading text-2xl sm:text-4xl font-black uppercase tracking-tighter text-white leading-none">
-                            {localSession.status === 'COMPLETED' ? 'TARGET_REACHED' : 'SESSION_FAILED'}
+                            {localSession.status === 'COMPLETED' ? 'TARGET REACHED' : 'SESSION FAILED'}
                           </h2>
                           <p className={`text-[9px] sm:text-[11px] font-heading uppercase tracking-[0.4em] font-black ${localSession.status === 'COMPLETED' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                            {localSession.status === 'COMPLETED' ? 'YIELD_SECURED' : 'MARGIN_BREACH'}
+                            {localSession.status === 'COMPLETED' ? 'YIELD SECURED' : 'MARGIN BREACH'}
                           </p>
                         </div>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-5 bg-black/40 border border-white/5 space-y-2 relative group-hover:border-white/10 transition-colors">
-                          <p className="text-[8px] sm:text-[9px] font-heading text-muted/60 uppercase tracking-[0.3em]">FINAL_BALANCE</p>
+                          <p className="text-[8px] sm:text-[9px] font-heading text-muted/60 uppercase tracking-[0.3em]">FINAL BALANCE</p>
                           <p className="text-xl sm:text-3xl font-mono font-black text-white">${localSession.currentCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                         </div>
                         <div className="p-5 bg-black/40 border border-white/5 space-y-2 relative group-hover:border-white/10 transition-colors">
-                          <p className="text-[8px] sm:text-[9px] font-heading text-muted/60 uppercase tracking-[0.3em]">NET_RESULT</p>
+                          <p className="text-[8px] sm:text-[9px] font-heading text-muted/60 uppercase tracking-[0.3em]">NET RESULT</p>
                           <p className={`text-xl sm:text-3xl font-mono font-black ${localSession.currentCapital >= localSession.initialCapital ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {localSession.currentCapital >= localSession.initialCapital ? '+' : ''}${(localSession.currentCapital - localSession.initialCapital).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
@@ -940,7 +940,7 @@ const MoneyManagementPage: React.FC = () => {
                           className="w-full py-5 bg-white text-black font-heading font-black text-[10px] sm:text-[12px] tracking-[0.4em] sm:tracking-[0.6em] uppercase hover:bg-accent transition-all flex items-center justify-center gap-3 group/btn shadow-glow-sm"
                           style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
                         >
-                          NEW_SESSION
+                          NEW SESSION
                           <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                         </button>
 
@@ -951,7 +951,7 @@ const MoneyManagementPage: React.FC = () => {
                           style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
                         >
                           <Undo2 size={16} className="text-muted group-hover/btn:text-white transition-colors" />
-                          <span className="text-[10px] font-heading font-black uppercase tracking-[0.3em]">UNDO_LAST_ACTION</span>
+                          <span className="text-[10px] font-heading font-black uppercase tracking-[0.3em]">UNDO LAST ACTION</span>
                         </button>
                       </div>
                     </div>
@@ -969,7 +969,7 @@ const MoneyManagementPage: React.FC = () => {
                   </div>
                   <div className="space-y-0.5">
                     <h3 className="font-heading text-[11px] sm:text-xs font-black tracking-widest uppercase text-white">HISTORY</h3>
-                    <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-widest font-bold">{localSession.trades.filter(t => t.outcome).length} COMPLETED_TRADES</p>
+                    <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-widest font-bold">{localSession.trades.filter(t => t.outcome).length} COMPLETED TRADES</p>
                   </div>
                 </div>
                 <button 
@@ -978,7 +978,7 @@ const MoneyManagementPage: React.FC = () => {
                 >
                   <span className="flex items-center gap-3 relative z-10">
                     {sortOrder === 'desc' ? <ArrowDownWideNarrow size={16} /> : <ArrowUpNarrowWide size={16} />}
-                    {sortOrder === 'desc' ? 'LATEST_FIRST' : 'OLDEST_FIRST'}
+                    {sortOrder === 'desc' ? 'LATEST FIRST' : 'OLDEST FIRST'}
                   </span>
                 </button>
               </div>
@@ -1044,7 +1044,7 @@ const MoneyManagementPage: React.FC = () => {
               <div className="flex flex-col items-center text-center space-y-6">
                  <div className="p-4 bg-error/10 border border-error/20 text-error"><AlertTriangle size={40} className="animate-pulse" /></div>
                  <div className="space-y-2">
-                    <h3 className="font-heading text-xl font-black uppercase tracking-tighter text-white">CLOSE_SESSION</h3>
+                    <h3 className="font-heading text-xl font-black uppercase tracking-tighter text-white">CLOSE SESSION</h3>
                     <p className="text-[10px] font-heading text-muted uppercase tracking-[0.2em] leading-relaxed">Are you sure you want to close this session? This will mark the session as failed and you can start a new one.</p>
                  </div>
                  <div className="grid grid-cols-2 gap-4 w-full pt-4">
