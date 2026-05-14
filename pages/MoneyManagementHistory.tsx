@@ -208,6 +208,15 @@ const MoneyManagementHistory: React.FC = () => {
           </div>
           <h2 className="text-2xl sm:text-5xl font-heading font-black tracking-tighter text-white uppercase leading-none">SESSION_LOGS</h2>
         </div>
+
+        <button 
+          onClick={() => window.location.hash = '#/money-management'}
+          className="hidden md:flex justify-center px-8 py-4 bg-white border border-white text-[10px] font-heading font-black tracking-[0.3em] sm:tracking-[0.4em] uppercase text-black hover:bg-accent hover:border-accent transition-all items-center gap-3 square-button shadow-glow-sm"
+          style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
+        >
+          <ChevronLeft size={16} />
+          BACK_TO_MANAGEMENT
+        </button>
       </div>
 
       {/* Stats Grid */}
@@ -259,11 +268,12 @@ const MoneyManagementHistory: React.FC = () => {
         ))}
       </div>
 
-      {/* Back Button - Repositioned below stats */}
-      <div className="relative z-10 flex justify-center sm:justify-start">
+
+      {/* Mobile Action Buttons - Visible only on mobile */}
+      <div className="flex md:hidden flex-col gap-3 relative z-10 px-0.5">
         <button 
           onClick={() => window.location.hash = '#/money-management'}
-          className="w-full sm:w-auto justify-center px-8 py-4 bg-white border border-white text-[10px] font-heading font-black tracking-[0.3em] sm:tracking-[0.4em] uppercase text-black hover:bg-accent hover:border-accent transition-all flex items-center gap-3 square-button shadow-glow-sm"
+          className="w-full justify-center px-8 py-4 bg-white border border-white text-[10px] font-heading font-black tracking-[0.3em] uppercase text-black hover:bg-accent hover:border-accent transition-all flex items-center gap-3 square-button shadow-glow-sm"
           style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
         >
           <ChevronLeft size={16} />
