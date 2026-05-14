@@ -756,7 +756,7 @@ const SubscriptionPlanManager: React.FC = () => {
 
       {(isAdding || editingId) && (
         <div ref={formRef} className="relative z-20 bg-[#050505] border border-white/10 p-6 sm:p-10 mb-12 animate-in slide-in-from-top-4 duration-500 shadow-glow-sm scroll-mt-20"
-             style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}>
+             style={{ clipPath: 'polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%)' }}>
           
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
              <div className="flex items-center gap-4">
