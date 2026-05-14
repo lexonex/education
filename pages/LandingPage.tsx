@@ -55,6 +55,7 @@ import {
 } from 'lucide-react';
 import SubscriptionPlanSection from '../components/SubscriptionPlanSection';
 import AccountRegistrationSection from '../components/AccountRegistrationSection';
+import MoneyManagementDemo from '../components/MoneyManagementDemo';
 
 const LandingPage: React.FC = () => {
   const { 
@@ -123,7 +124,7 @@ const LandingPage: React.FC = () => {
       <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#050505]/40 backdrop-blur-xl">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-10 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center">
-            <span className="font-heading font-black text-sm sm:text-base tracking-tighter">
+            <span className="font-heading font-black text-xl sm:text-2xl tracking-tighter text-white">
               {glitchText}
             </span>
           </div>
@@ -133,10 +134,16 @@ const LandingPage: React.FC = () => {
                { name: 'SERVICES', id: 'ecosystem' },
                { name: 'CURRICULUM', id: 'curriculum' },
                { name: 'INFRASTRUCTURE', id: 'extensions' },
+               { name: 'TOOLS', id: 'management_preview' },
                { name: 'ACCOUNTS', id: 'account_open', show: tradingPlatforms.length > 0 },
-               { name: 'PRICING', id: 'pricing', show: subscriptionPlans.length > 0 }
+               { name: 'PRICING', id: 'pricing', show: subscriptionPlans.length > 0 },
+               { name: 'CONTACT', path: '/contact' }
              ].filter(item => item.show === undefined || item.show).map(item => (
-               <button key={item.name} onClick={() => scrollToSection(item.id)} className="text-[10px] font-heading font-bold uppercase tracking-[0.2em] text-muted hover:text-accent transition-all">
+               <button 
+                 key={item.name} 
+                 onClick={() => item.path ? (window.location.hash = `#${item.path}`) : scrollToSection(item.id!)} 
+                 className="text-[10px] font-heading font-bold uppercase tracking-[0.2em] text-muted hover:text-accent transition-all"
+               >
                  {item.name}
                </button>
              ))}
@@ -160,12 +167,12 @@ const LandingPage: React.FC = () => {
            
            <div className="text-center space-y-6 max-w-4xl relative z-10">
               <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-accent/5 border border-accent/20 mb-4" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 92% 100%, 0 100%)' }}>
-                 <span className="text-[7px] sm:text-[9px] font-heading text-accent tracking-[0.4em] uppercase font-black">SYSTEM_ONLINE</span>
+                 <span className="text-[7px] sm:text-[9px] font-heading text-accent tracking-[0.4em] uppercase font-black">SYSTEM ONLINE</span>
               </div>
 
               <h1 className="text-4xl sm:text-6xl lg:text-8xl font-heading font-black tracking-[-0.04em] uppercase leading-[0.95] text-white">
-                BINARY_GRID<br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/20" style={{ WebkitTextStroke: '1px rgba(0,240,255,0.4)' }}>OF_THE_ELITE</span>
+                BINARY GRID<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/20" style={{ WebkitTextStroke: '1px rgba(0,240,255,0.4)' }}>OF THE ELITE</span>
               </h1>
 
               <p className="text-[10px] sm:text-[13px] text-muted max-w-2xl mx-auto text-center uppercase tracking-[0.3em] leading-relaxed font-medium">
@@ -219,10 +226,10 @@ const LandingPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-16 sm:mb-24">
                  <div className="space-y-4">
                     <span className="text-[8px] font-heading text-accent tracking-[0.4em] uppercase font-black flex items-center gap-3">
-                       <div className="w-1.5 h-1.5 bg-accent"></div> OUR_SERVICES
+                       <div className="w-1.5 h-1.5 bg-accent"></div> OUR SERVICES
                     </span>
                     <h2 className="text-4xl sm:text-6xl font-heading font-black tracking-tighter uppercase leading-[0.9]">
-                       THE_TACTICAL<br/><span className="text-white/20">ADVANTAGE</span>
+                       THE TACTICAL<br/><span className="text-white/20">ADVANTAGE</span>
                     </h2>
                  </div>
                  <p className="text-[10px] text-muted max-w-sm uppercase tracking-widest leading-loose font-medium">
@@ -266,10 +273,10 @@ const LandingPage: React.FC = () => {
               <div className="flex flex-col lg:flex-row justify-between items-start gap-12 mb-20">
                  <div className="space-y-4">
                     <span className="text-[8px] font-heading text-accent tracking-[0.4em] uppercase font-black flex items-center gap-3">
-                       <div className="w-1.5 h-1.5 bg-accent"></div> ACADEMY_CURRICULUM
+                       <div className="w-1.5 h-1.5 bg-accent"></div> ACADEMY CURRICULUM
                     </span>
                     <h2 className="text-4xl sm:text-6xl font-heading font-black tracking-tighter uppercase leading-[0.9]">
-                       MASTER_THE<br/><span className="text-muted/20">BINARY_FLOW</span>
+                       MASTER THE<br/><span className="text-muted/20">BINARY FLOW</span>
                     </h2>
                  </div>
                  <div className="max-w-md">
@@ -345,10 +352,10 @@ const LandingPage: React.FC = () => {
                  <div className="space-y-12">
                     <div className="space-y-4">
                        <span className="text-[8px] font-heading text-accent tracking-[0.4em] uppercase font-black flex items-center gap-3">
-                          <div className="w-1.5 h-1.5 bg-accent"></div> SYSTEM_EXTENSIONS
+                          <div className="w-1.5 h-1.5 bg-accent"></div> SYSTEM EXTENSIONS
                        </span>
                        <h2 className="text-4xl sm:text-7xl font-heading font-black tracking-tighter uppercase leading-[0.9] text-white">
-                          INTEGRATED<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/10" style={{ WebkitTextStroke: '1px rgba(0,240,255,0.2)' }}>BINARY_TECH</span>
+                          INTEGRATED<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent/10" style={{ WebkitTextStroke: '1px rgba(0,240,255,0.2)' }}>BINARY TECH</span>
                        </h2>
                     </div>
                     
@@ -389,23 +396,23 @@ const LandingPage: React.FC = () => {
                     <div className="bg-[#050505] p-8 sm:p-12 space-y-10">
                        <div className="flex justify-between items-center border-b border-white/5 pb-8">
                           <div className="space-y-1">
-                             <span className="text-[7px] font-heading tracking-[0.5em] text-accent uppercase font-black">MARKET_STATUS</span>
+                             <span className="text-[7px] font-heading tracking-[0.5em] text-accent uppercase font-black">MARKET STATUS</span>
                              <div className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                <span className="text-[10px] font-heading font-black tracking-widest text-white uppercase">SYSTEMS_ACTIVE</span>
+                                <span className="text-[10px] font-heading font-black tracking-widest text-white uppercase">SYSTEM ACTIVE</span>
                              </div>
                           </div>
                           <div className="text-right">
                              <span className="text-[7px] font-heading tracking-[0.5em] text-white/20 uppercase font-black">ENCRYPTION</span>
-                             <div className="text-[10px] font-heading font-black tracking-widest text-white uppercase">AES_256_ACTIVE</div>
+                             <div className="text-[10px] font-heading font-black tracking-widest text-white uppercase">AES 256 ACTIVE</div>
                           </div>
                        </div>
 
                        <div className="space-y-6">
                           {[
-                             { label: 'OTC_SIGNAL_ALGORITHM', value: 92 },
-                             { label: 'LIVE_MARKET_PRECISION', value: 89 },
-                             { label: 'STUDENT_SUCCESS_RATIO', value: 76 }
+                             { label: 'OTC SIGNAL ALGORITHM', value: 92 },
+                             { label: 'LIVE MARKET PRECISION', value: 89 },
+                             { label: 'STUDENT SUCCESS RATIO', value: 76 }
                           ].map((stat, i) => (
                              <div key={i} className="space-y-3">
                                 <div className="flex justify-between items-end">
@@ -420,14 +427,19 @@ const LandingPage: React.FC = () => {
                        </div>
 
                        <div className="pt-6">
-                          <button onClick={() => scrollToSection('account_open')} className="w-full py-4 bg-accent text-[#050505] font-heading text-[9px] font-black tracking-[0.4em] uppercase hover:bg-white hover:text-black transition-all">
-                             INITIALIZE_MEMBERSHIP
+                          <button onClick={() => scrollToSection('management_preview')} className="w-full py-4 bg-accent text-[#050505] font-heading text-[9px] font-black tracking-[0.4em] uppercase hover:bg-white hover:text-black transition-all">
+                             PREVIEW ANALYTICS TOOLS
                           </button>
                        </div>
                     </div>
                  </div>
               </div>
            </div>
+        </section>
+
+        {/* --- MONEY MANAGEMENT PREVIEW --- */}
+        <section id="management_preview" className="min-h-screen snap-start border-t border-white/5 flex items-center bg-[#050505]/40 backdrop-blur-3xl">
+           <MoneyManagementDemo />
         </section>
 
         {/* --- ACCOUNT OPENING PLATFORMS --- */}
@@ -438,11 +450,9 @@ const LandingPage: React.FC = () => {
         )}
 
         {/* --- SUBSCRIPTION PLANS --- */}
-        {subscriptionPlans.length > 0 && (
-          <section id="pricing" className="min-h-screen snap-start flex items-center bg-white/[0.01]">
-            <SubscriptionPlanSection />
-          </section>
-        )}
+        <section id="pricing" className="min-h-screen snap-start flex items-center bg-white/[0.01]">
+          <SubscriptionPlanSection />
+        </section>
 
         {/* --- TIDY FOOTER --- */}
         <footer className="border-t border-white/5 bg-[#050505] py-20 px-6 sm:px-12">
