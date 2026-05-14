@@ -15,6 +15,7 @@ import CyberBackground from './components/CyberBackground';
 
 // Pages
 import LandingPage from './pages/LandingPage';
+import ContactUsPage from './pages/ContactUsPage';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserManagement from './pages/UserManagement';
@@ -186,6 +187,7 @@ const App: React.FC = () => {
           {!isAuthenticated ? (
             <Routes>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/contact" element={<ContactUsPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -196,6 +198,7 @@ const App: React.FC = () => {
                 <Route path="/view/:id" element={<DocumentViewer />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/search" element={<SearchPage />} />
+                <Route path="/contact" element={<ContactUsPage />} />
                 <Route path="/category/:categoryName" element={<PermissionViewPage />} />
                 
                 <Route path="/money-management" element={<MoneyManagementPage />} />
