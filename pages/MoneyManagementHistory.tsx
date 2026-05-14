@@ -190,9 +190,9 @@ const MoneyManagementHistory: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
         <ShieldAlert size={64} className="text-error animate-pulse" />
-        <h2 className="text-2xl font-heading font-black uppercase tracking-widest text-error">ACCESS DENIED</h2>
-        <p className="text-muted text-xs font-heading uppercase tracking-widest">SUBSCRIPTION EXPIRED OR UNAUTHORIZED</p>
-        <button onClick={() => window.location.hash = '#/dashboard'} className="px-8 py-3 bg-white text-black font-heading text-[10px] font-black uppercase tracking-widest hover:bg-accent transition-all">RETURN TO BASE</button>
+        <h2 className="text-2xl font-heading font-black uppercase tracking-widest text-error">ACCESS_DENIED</h2>
+        <p className="text-muted text-xs font-heading uppercase tracking-widest">SUBSCRIPTION_EXPIRED_OR_UNAUTHORIZED</p>
+        <button onClick={() => window.location.hash = '#/dashboard'} className="px-8 py-3 bg-white text-black font-heading text-[10px] font-black uppercase tracking-widest hover:bg-accent transition-all">RETURN_TO_BASE</button>
       </div>
     );
   }
@@ -206,7 +206,7 @@ const MoneyManagementHistory: React.FC = () => {
             <Cpu size={16} className="animate-pulse" />
             <p className="text-[10px] font-heading tracking-[0.5em] uppercase font-black">ANALYTICS</p>
           </div>
-          <h2 className="text-2xl sm:text-5xl font-heading font-black tracking-tighter text-white uppercase leading-none">SESSION LOGS</h2>
+          <h2 className="text-2xl sm:text-5xl font-heading font-black tracking-tighter text-white uppercase leading-none">SESSION_LOGS</h2>
         </div>
 
         <button 
@@ -215,17 +215,17 @@ const MoneyManagementHistory: React.FC = () => {
           style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
         >
           <ChevronLeft size={16} />
-          BACK TO MANAGEMENT
+          BACK_TO_MANAGEMENT
         </button>
       </div>
 
       {/* Stats Grid */}
       <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-4">
         {[
-          { label: 'TOTAL PROFIT', val: `${stats.totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: stats.totalProfit >= 0 ? 'text-emerald-500' : 'text-rose-500', icon: <DollarSign size={14} className="sm:w-4 sm:h-4"/>, desc: 'YIELD TOTAL' },
-          { label: 'WIN RATE', val: `${stats.winRate.toFixed(1)}%`, color: 'text-accent', icon: <PieChart size={14} className="sm:w-4 sm:h-4"/>, desc: `${stats.completedSessions}W / ${stats.failedSessions}L` },
-          { label: 'TOTAL SESSIONS', val: stats.totalSessions.toLocaleString('en-US'), color: 'text-white', icon: <Database size={14} className="sm:w-4 sm:h-4"/>, desc: 'REGISTRY TOTAL' },
-          { label: 'AVG PROFIT', val: `${(stats.totalSessions > 0 ? stats.totalProfit / stats.totalSessions : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: 'text-yellow-500', icon: <Activity size={14} className="sm:w-4 sm:h-4"/>, desc: 'MEAN PER SESSION' },
+          { label: 'TOTAL_PROFIT', val: `${stats.totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: stats.totalProfit >= 0 ? 'text-emerald-500' : 'text-rose-500', icon: <DollarSign size={14} className="sm:w-4 sm:h-4"/>, desc: 'YIELD_TOTAL' },
+          { label: 'WIN_RATE', val: `${stats.winRate.toFixed(1)}%`, color: 'text-accent', icon: <PieChart size={14} className="sm:w-4 sm:h-4"/>, desc: `${stats.completedSessions}W / ${stats.failedSessions}L` },
+          { label: 'TOTAL_SESSIONS', val: stats.totalSessions.toLocaleString('en-US'), color: 'text-white', icon: <Database size={14} className="sm:w-4 sm:h-4"/>, desc: 'REGISTRY_TOTAL' },
+          { label: 'AVG_PROFIT', val: `${(stats.totalSessions > 0 ? stats.totalProfit / stats.totalSessions : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: 'text-yellow-500', icon: <Activity size={14} className="sm:w-4 sm:h-4"/>, desc: 'MEAN_PER_SESSION' },
         ].map((s, i) => (
           <div key={i} className={`bg-surface/80 border border-white/5 p-2 sm:p-5 relative overflow-hidden group transition-all duration-500 flex flex-col justify-between min-h-[140px] sm:min-h-[180px] ${
             s.color === 'text-accent' ? 'hover:border-accent/40' : 
@@ -249,7 +249,7 @@ const MoneyManagementHistory: React.FC = () => {
                     {s.icon}
                   </div>
                   <div className="text-right hidden sm:block">
-                     <p className="text-[7px] font-heading tracking-[0.4em] text-muted uppercase opacity-40">CH {i.toString().padStart(2, '0')}</p>
+                     <p className="text-[7px] font-heading tracking-[0.4em] text-muted uppercase opacity-40">CH_{i.toString().padStart(2, '0')}</p>
                      <p className={`text-[8px] font-heading tracking-widest uppercase font-black ${s.color}`}>{s.desc}</p>
                   </div>
                </div>
@@ -260,7 +260,7 @@ const MoneyManagementHistory: React.FC = () => {
              </div>
 
              <div className="flex gap-1 mt-4 sm:mt-6">
-               {[...Array(8)].map(( , b) => (
+               {[...Array(8)].map((_, b) => (
                  <div key={b} className={`h-1 flex-1 transition-all duration-700 ${b <= 5 ? s.color.replace('text-', 'bg-') : 'bg-white/5'}`}></div>
                ))}
              </div>
@@ -277,7 +277,7 @@ const MoneyManagementHistory: React.FC = () => {
           style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
         >
           <ChevronLeft size={16} />
-          BACK TO MANAGEMENT
+          BACK_TO_MANAGEMENT
         </button>
       </div>
 
@@ -341,7 +341,7 @@ const MoneyManagementHistory: React.FC = () => {
           <div className="relative z-10 flex items-center justify-between mb-6 sm:mb-10">
             <h3 className="font-heading text-[10px] sm:text-xs lg:text-sm font-black flex items-center gap-3 tracking-[0.4em] uppercase text-white">
               <History size={16} className="text-accent" />
-              RECENT SESSIONS
+              RECENT_SESSIONS
             </h3>
             <div className="flex items-center gap-1">
               <div className="w-1 h-1 bg-accent/40 rounded-full"></div>
@@ -367,7 +367,7 @@ const MoneyManagementHistory: React.FC = () => {
                       <div className="flex justify-between items-start">
                         <div className="space-y-1 min-w-0">
                           <h4 className="text-[10px] sm:text-xs font-heading font-black text-white uppercase tracking-widest truncate pr-2">
-                            {session.name || 'UNNAMED SESSION'}
+                            {session.name || 'UNNAMED_SESSION'}
                           </h4>
                           <div className="flex items-center gap-2">
                             <span className="text-[8px] font-mono text-muted/40 uppercase tracking-widest">{formatDate(session.createdAt)}</span>
@@ -384,7 +384,7 @@ const MoneyManagementHistory: React.FC = () => {
 
                       <div className="flex items-end justify-between pt-2 border-t border-white/5">
                         <div className="space-y-0.5">
-                          <p className="text-[7px] font-heading text-muted/20 uppercase tracking-widest font-black">NET PROFIT</p>
+                          <p className="text-[7px] font-heading text-muted/20 uppercase tracking-widest font-black">NET_PROFIT</p>
                           <div className={`text-xs sm:text-sm font-mono font-black tracking-tighter ${session.currentCapital >= session.initialCapital ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {session.currentCapital >= session.initialCapital ? '+' : ''}${(session.currentCapital - session.initialCapital).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </div>
@@ -405,7 +405,7 @@ const MoneyManagementHistory: React.FC = () => {
             ) : (
               <div className="h-full flex flex-col items-center justify-center opacity-20 py-20">
                 <Database size={32} className="mb-4" />
-                <p className="text-[9px] font-heading uppercase tracking-[0.3em]">No Recent Data</p>
+                <p className="text-[9px] font-heading uppercase tracking-[0.3em]">No_Recent_Data</p>
               </div>
             )}
           </div>
@@ -426,19 +426,19 @@ const MoneyManagementHistory: React.FC = () => {
                 <div className="w-1.5 h-1.5 bg-accent animate-ping rounded-full"></div>
                 <span className="text-[8px] font-heading tracking-[0.4em] uppercase font-black">ARCHIVE</span>
               </div>
-              <h3 className="text-xl sm:text-3xl font-heading font-black text-white tracking-tighter uppercase leading-none">SESSION DATABASE</h3>
-              <p className="text-[8px] font-heading text-muted/40 uppercase tracking-[0.2em]">PRECISION DATA MAPPING ACTIVE</p>
+              <h3 className="text-xl sm:text-3xl font-heading font-black text-white tracking-tighter uppercase leading-none">SESSION_DATABASE</h3>
+              <p className="text-[8px] font-heading text-muted/40 uppercase tracking-[0.2em]">PRECISION_DATA_MAPPING_ACTIVE</p>
             </div>
             
             <div className="w-full lg:w-auto">
               <div className="group w-full px-6 py-4 bg-black/40 border border-white/5 flex items-center justify-between lg:justify-start gap-8 hover:border-accent/30 transition-all">
                 <div className="flex flex-col">
-                  <span className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">ACTIVE NODES</span>
+                  <span className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">ACTIVE_NODES</span>
                   <span className="text-lg font-heading font-black text-white">{filteredSessions.length}</span>
                 </div>
                 <div className="w-[1px] h-8 bg-white/10"></div>
                 <div className="flex flex-col text-right lg:text-left">
-                  <span className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">SYSTEM HEALTH</span>
+                  <span className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">SYSTEM_HEALTH</span>
                   <span className="text-[9px] font-heading font-black text-emerald-500 uppercase tracking-widest">OPTIMAL</span>
                 </div>
               </div>
@@ -452,7 +452,7 @@ const MoneyManagementHistory: React.FC = () => {
               <Search size={14} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isSearchFocused ? 'text-accent' : 'text-muted'}`} />
               <input 
                 type="text"
-                placeholder="SEARCH SESSION..."
+                placeholder="SEARCH_SESSION..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
@@ -468,7 +468,7 @@ const MoneyManagementHistory: React.FC = () => {
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 className="w-full sm:w-auto bg-transparent py-4 sm:py-2.5 pl-4 pr-10 text-[9px] sm:text-[10px] font-heading font-black uppercase tracking-widest outline-none cursor-pointer appearance-none text-white min-w-[140px]"
               >
-                <option value="ALL" className="bg-black text-white">ALL STATUS</option>
+                <option value="ALL" className="bg-black text-white">ALL_STATUS</option>
                 <option value="ACTIVE" className="bg-black text-white">ACTIVE</option>
                 <option value="COMPLETED" className="bg-black text-white">COMPLETED</option>
                 <option value="FAILED" className="bg-black text-white">FAILED</option>
@@ -505,26 +505,26 @@ const MoneyManagementHistory: React.FC = () => {
         {/* Precision Data List - Plain Grid with Vertical Dividers & Consistent Icons */}
         <div className="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar px-2 pb-2">
           {/* Header Strip - Desktop Only */}
-          <div className="hidden lg:grid grid-cols-[24% 14% 14% 14% 14% 10% 10%] items-stretch text-[8px] sm:text-[9px] lg:text-[10px] font-heading font-black text-muted/40 uppercase tracking-[0.3em] bg-black border-b border-white/5 sticky top-0 z-20">
+          <div className="hidden lg:grid grid-cols-[24%_14%_14%_14%_14%_10%_10%] items-stretch text-[8px] sm:text-[9px] lg:text-[10px] font-heading font-black text-muted/40 uppercase tracking-[0.3em] bg-black border-b border-white/5 sticky top-0 z-20">
             <div className="px-4 sm:px-6 py-4 flex items-center gap-3">
               <Database size={12} className="text-accent/40" />
-              SESSION IDENTITY
+              SESSION_IDENTITY
             </div>
             <div className="px-4 sm:px-6 py-4 flex items-center gap-3">
               <Clock size={12} className="text-accent/40" />
-              START TIME
+              START_TIME
             </div>
             <div className="px-4 sm:px-6 py-4 flex items-center gap-3">
               <Clock size={12} className="text-accent/40" />
-              CLOSE TIME
+              CLOSE_TIME
             </div>
             <div className="px-4 sm:px-6 py-4 flex items-center gap-3">
               <DollarSign size={12} className="text-accent/40" />
-              CAPITAL FLOW
+              CAPITAL_FLOW
             </div>
             <div className="px-4 sm:px-6 py-4 flex items-center gap-3">
               <Activity size={12} className="text-accent/40" />
-              NET YIELD
+              NET_YIELD
             </div>
             <div className="px-4 sm:px-6 py-4 flex items-center justify-center gap-3">
               <Target size={12} className="text-accent/40" />
@@ -550,12 +550,12 @@ const MoneyManagementHistory: React.FC = () => {
               }`}></div>
 
               {/* Desktop Row */}
-              <div className="hidden lg:grid grid-cols-[24% 14% 14% 14% 14% 10% 10%] items-stretch">
+              <div className="hidden lg:grid grid-cols-[24%_14%_14%_14%_14%_10%_10%] items-stretch">
                 {/* Identity */}
                 <div className="px-4 sm:px-6 py-4 flex items-center min-w-0">
                   <div className="space-y-0.5 min-w-0">
                     <h4 className="text-[10px] sm:text-[11px] lg:text-xs font-heading font-black text-white uppercase tracking-widest group-hover:text-accent transition-colors truncate">
-                      {session.name || 'UNNAMED NODE'}
+                      {session.name || 'UNNAMED_NODE'}
                     </h4>
                     <p className="text-[6px] sm:text-[7px] font-heading text-muted/30 uppercase tracking-[0.2em] truncate">
                       {session.serialNumber || `SN: SES-${session.id.slice(-4).toUpperCase()}`}
@@ -582,7 +582,7 @@ const MoneyManagementHistory: React.FC = () => {
                         <span className="text-[8px] sm:text-[9px] font-mono text-white/60">{formatTime(session.completedAt)}</span>
                       </>
                     ) : (
-                      <span className="text-[7px] sm:text-[8px] font-heading text-muted/20 uppercase tracking-widest">IN PROGRESS</span>
+                      <span className="text-[7px] sm:text-[8px] font-heading text-muted/20 uppercase tracking-widest">IN_PROGRESS</span>
                     )}
                   </div>
                 </div>
@@ -650,7 +650,7 @@ const MoneyManagementHistory: React.FC = () => {
                       <span className="text-[7px] sm:text-[8px] font-heading text-muted/40 uppercase tracking-widest">
                         {session.serialNumber || `SN: SES-${session.id.slice(-4).toUpperCase()}`}
                       </span>
-                      <h4 className="text-xs sm:text-sm lg:text-base font-heading font-black text-white uppercase tracking-widest">{session.name || 'UNNAMED NODE'}</h4>
+                      <h4 className="text-xs sm:text-sm lg:text-base font-heading font-black text-white uppercase tracking-widest">{session.name || 'UNNAMED_NODE'}</h4>
                     </div>
                     <div className={`px-2 sm:px-3 py-1 border text-[7px] sm:text-[8px] font-heading font-black uppercase tracking-widest text-center ${
                       session.status?.toString().toUpperCase() === 'COMPLETED' ? 'border-emerald-500/20 text-emerald-500 bg-emerald-500/5' : 
@@ -663,14 +663,14 @@ const MoneyManagementHistory: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5 pl-3">
                     <div className="space-y-1">
-                      <p className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">START TIME</p>
+                      <p className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">START_TIME</p>
                       <div className="flex flex-col">
                         <span className="text-[10px] font-mono text-white/80">{formatDate(session.createdAt)}</span>
                         <span className="text-[9px] font-mono text-muted/40">{formatTime(session.createdAt)}</span>
                       </div>
                     </div>
                     <div className="space-y-1 text-right">
-                      <p className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">CLOSE TIME</p>
+                      <p className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">CLOSE_TIME</p>
                       <div className="flex flex-col">
                         {session.completedAt ? (
                           <>
@@ -678,7 +678,7 @@ const MoneyManagementHistory: React.FC = () => {
                             <span className="text-[9px] font-mono text-muted/40">{formatTime(session.completedAt)}</span>
                           </>
                         ) : (
-                          <span className="text-[10px] font-mono text-muted/20 uppercase">IN PROGRESS</span>
+                          <span className="text-[10px] font-mono text-muted/20 uppercase">IN_PROGRESS</span>
                         )}
                       </div>
                     </div>
@@ -686,11 +686,11 @@ const MoneyManagementHistory: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-4 pl-3">
                     <div className="space-y-1">
-                      <p className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">CAPITAL FLOW</p>
+                      <p className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">CAPITAL_FLOW</p>
                       <p className="text-[10px] sm:text-[11px] font-mono text-white font-bold">${session.currentCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })} / ${session.initialCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
                     </div>
                     <div className="space-y-1 text-right">
-                      <p className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">NET YIELD</p>
+                      <p className="text-[7px] font-heading text-muted/40 uppercase tracking-widest">NET_YIELD</p>
                       <p className={`text-[10px] sm:text-[11px] font-mono font-black ${session.currentCapital >= session.initialCapital ? 'text-emerald-500' : 'text-rose-500'}`}>
                         {session.currentCapital >= session.initialCapital ? '+' : ''}${(session.currentCapital - session.initialCapital).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
@@ -725,8 +725,8 @@ const MoneyManagementHistory: React.FC = () => {
               <Database size={40} className="text-muted/10" />
             </div>
             <div className="text-center space-y-1.5 px-4">
-              <p className="text-[9px] sm:text-[10px] font-heading text-muted/40 uppercase tracking-[0.2em] sm:tracking-[0.6em]">NO RECORDS FOUND IN ARCHIVE</p>
-              <p className="text-[7px] sm:text-[8px] font-heading text-muted/20 uppercase tracking-widest">ADJUST FILTERS TO RESCAN DATABASE</p>
+              <p className="text-[9px] sm:text-[10px] font-heading text-muted/40 uppercase tracking-[0.2em] sm:tracking-[0.6em]">NO_RECORDS_FOUND_IN_ARCHIVE</p>
+              <p className="text-[7px] sm:text-[8px] font-heading text-muted/20 uppercase tracking-widest">ADJUST_FILTERS_TO_RESCAN_DATABASE</p>
             </div>
           </div>
         )}
@@ -745,7 +745,7 @@ const MoneyManagementHistory: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="relative z-10 w-full max-w-5xl bg-[#050505] border border-white/10 shadow-[0 0 100px rgba(0,0,0,1)] flex flex-col max-h-[90vh] overflow-hidden"
+            className="relative z-10 w-full max-w-5xl bg-[#050505] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,1)] flex flex-col max-h-[90vh] overflow-hidden"
             style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%)' }}
           >
             {/* Minimalist Header */}
@@ -758,7 +758,7 @@ const MoneyManagementHistory: React.FC = () => {
                 </div>
                 <div className="space-y-0.5 sm:space-y-1 min-w-0">
                   <h3 className="text-sm sm:text-lg lg:text-xl font-heading font-black text-white uppercase tracking-widest truncate">
-                    {selectedSession.name || 'SESSION NODE'}
+                    {selectedSession.name || 'SESSION_NODE'}
                   </h3>
                   <div className="flex items-center gap-2 sm:gap-3">
                     <p className="text-[8px] sm:text-[10px] font-heading text-accent/40 uppercase tracking-[0.2em]">
@@ -810,7 +810,7 @@ const MoneyManagementHistory: React.FC = () => {
 
                 {/* Description / Brief */}
                 <div className="p-3 sm:p-4 bg-white/[0.02] border border-white/5 flex flex-col justify-center">
-                  <p className="text-[6px] sm:text-[7px] font-heading text-muted/40 uppercase tracking-widest mb-1 sm:mb-2">SESSION BRIEF</p>
+                  <p className="text-[6px] sm:text-[7px] font-heading text-muted/40 uppercase tracking-widest mb-1 sm:mb-2">SESSION_BRIEF</p>
                   <p className="text-[9px] sm:text-[11px] lg:text-xs text-muted leading-relaxed italic">
                     {selectedSession.description || 'No additional intelligence data provided for this session node.'}
                   </p>
@@ -824,9 +824,9 @@ const MoneyManagementHistory: React.FC = () => {
                   <div className="flex items-center justify-between px-1 sm:px-2">
                     <h4 className="text-[8px] sm:text-[9px] font-heading font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.3em] flex items-center gap-2 sm:gap-3">
                       <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-accent animate-pulse"></div>
-                      EXECUTION LOG
+                      EXECUTION_LOG
                     </h4>
-                    <span className="text-[6px] sm:text-[7px] font-mono text-muted/40 uppercase tracking-widest">{selectedSession.trades.length} OPS RECORDED</span>
+                    <span className="text-[6px] sm:text-[7px] font-mono text-muted/40 uppercase tracking-widest">{selectedSession.trades.length} OPS_RECORDED</span>
                   </div>
                   
                   <div className="border border-white/5 bg-black/20 divide-y divide-white/5 max-h-[300px] sm:max-h-[400px] overflow-y-auto custom-scrollbar">
@@ -865,13 +865,13 @@ const MoneyManagementHistory: React.FC = () => {
                   <div className="p-4 sm:p-6 bg-white/[0.01] border border-white/5 space-y-4 sm:space-y-6">
                     <h4 className="text-[8px] sm:text-[9px] font-heading font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.3em] flex items-center gap-2 sm:gap-3">
                       <Cpu size={10} className="text-accent" />
-                      STRATEGY CONFIG
+                      STRATEGY_CONFIG
                     </h4>
                     <div className="space-y-3 sm:space-y-4">
                       {[
-                        { label: 'TOTAL STEPS', val: selectedSession.totalEvents },
-                        { label: 'TARGET WINS', val: selectedSession.expectedWins },
-                        { label: 'MARKET ODDS', val: `@${selectedSession.odds.toFixed(2)}` },
+                        { label: 'TOTAL_STEPS', val: selectedSession.totalEvents },
+                        { label: 'TARGET_WINS', val: selectedSession.expectedWins },
+                        { label: 'MARKET_ODDS', val: `@${selectedSession.odds.toFixed(2)}` },
                       ].map((item, i) => (
                         <div key={i} className="flex justify-between items-center">
                           <span className="text-[7px] sm:text-[8px] font-heading text-muted/60 uppercase tracking-widest">{item.label}</span>
@@ -894,7 +894,7 @@ const MoneyManagementHistory: React.FC = () => {
                   {/* Streak Analysis */}
                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     <div className="p-3 sm:p-4 bg-emerald-500/[0.02] border border-emerald-500/10">
-                      <p className="text-[6px] sm:text-[7px] font-heading text-emerald-500/40 uppercase tracking-widest mb-0.5 sm:mb-1">MAX WIN STREAK</p>
+                      <p className="text-[6px] sm:text-[7px] font-heading text-emerald-500/40 uppercase tracking-widest mb-0.5 sm:mb-1">MAX_WIN_STREAK</p>
                       <p className="text-xl sm:text-2xl font-heading font-black text-emerald-500">
                         {selectedSession.trades.reduce((acc, t) => {
                           if (t.outcome === 'WIN') { acc.current++; acc.max = Math.max(acc.max, acc.current); }
@@ -904,7 +904,7 @@ const MoneyManagementHistory: React.FC = () => {
                       </p>
                     </div>
                     <div className="p-3 sm:p-4 bg-rose-500/[0.02] border border-rose-500/10">
-                      <p className="text-[6px] sm:text-[7px] font-heading text-rose-500/40 uppercase tracking-widest mb-0.5 sm:mb-1">MAX LOSS STREAK</p>
+                      <p className="text-[6px] sm:text-[7px] font-heading text-rose-500/40 uppercase tracking-widest mb-0.5 sm:mb-1">MAX_LOSS_STREAK</p>
                       <p className="text-xl sm:text-2xl font-heading font-black text-rose-500">
                         {selectedSession.trades.reduce((acc, t) => {
                           if (t.outcome === 'LOSE') { acc.current++; acc.max = Math.max(acc.max, acc.current); }
@@ -946,7 +946,7 @@ const MoneyManagementHistory: React.FC = () => {
                   className="w-full sm:w-auto px-10 py-4 bg-white text-black text-[10px] font-heading font-black uppercase tracking-[0.4em] hover:bg-accent transition-all"
                   style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
                 >
-                  CLOSE NODE
+                  CLOSE_NODE
                 </button>
               </div>
             </div>
@@ -959,7 +959,7 @@ const MoneyManagementHistory: React.FC = () => {
         isOpen={!!showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(null)}
         onConfirm={() => showDeleteConfirm && handleDeleteSession(showDeleteConfirm)}
-        title="DELETE SESSION"
+        title="DELETE_SESSION"
         message="Are you sure you want to permanently delete this session record? This action cannot be undone."
         confirmLabel={isDeleting ? "DELETING..." : "DELETE"}
         type="danger"
