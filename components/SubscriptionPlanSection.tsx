@@ -4,11 +4,158 @@ import { Link } from 'react-router-dom';
 import { Zap, Clock, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { useDataStore } from '../store/dataStore';
 
+const DEFAULT_PLANS = [
+  {
+    id: 'foundation',
+    name: 'Lexonex Foundation',
+    subtitle: 'Best for Beginners',
+    price: 199,
+    currency: 'USD',
+    durationDays: 0,
+    description: 'A beginner friendly binary trading course built with image based lessons and written explanations. Designed for step-by-step learning in a simple and structured way.',
+    features: [
+      'Image Based Classes',
+      'Beginner Strategies',
+      'Market Analysis Basics',
+      'Risk Management',
+      'Trading Psychology Mastery',
+      'Strategy PDF Notes',
+      'Basic Support Access'
+    ],
+    keyFeatures: [
+      { text: 'Signals: Limited Weekly', status: 'DEFAULT', isAvailable: true },
+      { text: 'Live Trading: No', status: 'UNAVAILABLE', isAvailable: false },
+      { text: 'Support: Basic', status: 'DEFAULT', isAvailable: true }
+    ],
+    isPopular: false
+  },
+  {
+    id: 'ascend',
+    name: 'Lexonex Ascend',
+    subtitle: 'Best for Structured Learning',
+    price: 399,
+    currency: 'USD',
+    durationDays: 0,
+    description: 'A complete video based binary trading course designed for professional step-by-step learning with detailed chart explanations and advanced strategy breakdowns.',
+    features: [
+      'Everything in Foundation',
+      'Full Video Course Library',
+      'Advanced Strategy Systems',
+      'Advanced Money Management',
+      'Premium Community Access',
+      'AI Trading Assistant',
+      'Priority Support System'
+    ],
+    keyFeatures: [
+      { text: 'Signals: Daily Signals', status: 'POPULAR', isAvailable: true },
+      { text: 'Live Trading: Weekly', status: 'POPULAR', isAvailable: true },
+      { text: 'Support: Priority', status: 'POPULAR', isAvailable: true }
+    ],
+    isPopular: true
+  },
+  {
+    id: 'vanguard',
+    name: 'Lexonex Vanguard',
+    subtitle: 'Best for Professional Live Training',
+    price: 799,
+    currency: 'USD',
+    durationDays: 120,
+    description: 'A professional live training program for serious learners. Intensive 4-month program covering advanced execution, strong psychology, and precision entries.',
+    features: [
+      'Everything in Ascend',
+      'Live Interactive Classes',
+      '120 Days Program Duration',
+      'Advanced Market Analysis',
+      'Personal Mentorship',
+      'Live Trading 3 Days Week',
+      'Ultra Priority Support'
+    ],
+    keyFeatures: [
+      { text: 'Signals: Premium Signals', status: 'SPECIAL', isAvailable: true },
+      { text: 'Live Trading: 3/Week', status: 'SPECIAL', isAvailable: true },
+      { text: 'Support: Fast Priority', status: 'SPECIAL', isAvailable: true }
+    ],
+    isPopular: false
+  },
+  {
+    id: 'dominion',
+    name: 'Lexonex Dominion',
+    subtitle: 'Best for Daily Trading Support',
+    price: 299,
+    currency: 'USD',
+    durationDays: 30,
+    description: 'Premium support service for active users wanting daily market guidance, strong signal systems, and consistent trading assistance with professional help.',
+    features: [
+      'VIP Signal Infrastructure',
+      'Daily Live Trading Room',
+      'Advanced Market Updates',
+      'Risk Management Guard',
+      'AI Trading Assistant',
+      'Elite Private Group',
+      'Dedicated VIP Support'
+    ],
+    keyFeatures: [
+      { text: 'Signals: VIP Instant', status: 'POPULAR', isAvailable: true },
+      { text: 'Live Trading: Daily', status: 'POPULAR', isAvailable: true },
+      { text: 'Support: Dedicated VIP', status: 'POPULAR', isAvailable: true }
+    ],
+    isPopular: false
+  },
+  {
+    id: 'sovereign',
+    name: 'Lexonex Sovereign',
+    subtitle: 'Best for Professional Level Execution',
+    price: 499,
+    currency: 'USD',
+    durationDays: 30,
+    description: 'Advanced service built for institutional style execution systems, market behavior understanding, and long-term performance management.',
+    features: [
+      'Everything in Dominion',
+      'Institutional VIP Signals',
+      'Institutional Strategy Models',
+      'Precision Entry Systems',
+      'Advanced Market Analysis',
+      'One to One Sessions',
+      'Elite Priority Support'
+    ],
+    keyFeatures: [
+      { text: 'Signals: Institutional VIP', status: 'SPECIAL', isAvailable: true },
+      { text: 'Live Trading: Daily Advanced', status: 'SPECIAL', isAvailable: true },
+      { text: 'Support: Elite Priority', status: 'SPECIAL', isAvailable: true }
+    ],
+    isPopular: false
+  },
+  {
+    id: 'legacy',
+    name: 'Lexonex Legacy',
+    subtitle: 'Best for Elite VIP Experience',
+    price: 699,
+    currency: 'USD',
+    durationDays: 30,
+    description: 'The most premium experience for users wanting maximum private guidance, elite execution models, and world-class management structures.',
+    features: [
+      'Everything in Sovereign',
+      'Ultra VIP Signals',
+      'Unlimited VIP Live Trading',
+      'Custom Growth Planning',
+      'Private One to One Sessions',
+      'Lifetime Premium Updates',
+      'Dedicated 24/7 VIP Support'
+    ],
+    keyFeatures: [
+      { text: 'Signals: Ultra Premium', status: 'SPECIAL', isAvailable: true },
+      { text: 'Live Trading: Unlimited VIP', status: 'SPECIAL', isAvailable: true },
+      { text: 'Support: 24/7 VIP Elite', status: 'SPECIAL', isAvailable: true }
+    ],
+    isPopular: false
+  }
+];
+
 const SubscriptionPlanSection: React.FC = () => {
   const { subscriptionPlans } = useDataStore();
   const [selectedVariants, setSelectedVariants] = React.useState<Record<string, string>>({}); // planId -> variantId
 
-  if (!subscriptionPlans || subscriptionPlans.length === 0) return null;
+  const plansToDisplay = (subscriptionPlans && subscriptionPlans.length > 0) ? subscriptionPlans : DEFAULT_PLANS;
 
   return (
     <section id="pricing" className="min-h-screen flex flex-col justify-center py-16 sm:py-32 px-4 sm:px-6 max-w-[1400px] mx-auto border-b border-white/5 relative snap-start">
@@ -17,19 +164,19 @@ const SubscriptionPlanSection: React.FC = () => {
       <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 mb-12 sm:mb-24">
         <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-yellow-500/5 border border-yellow-500/20" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 92% 100%, 0 100%)' }}>
           <Zap size={14} className="text-yellow-500 animate-pulse" />
-          <span className="text-[10px] font-heading text-yellow-500 tracking-[0.5em] uppercase font-black">SUBSCRIPTIONS</span>
+          <span className="text-[10px] font-heading text-yellow-500 tracking-[0.5em] uppercase font-black">LEGAL SUBSCRIPTIONS</span>
         </div>
         <h2 className="text-4xl sm:text-7xl font-heading font-black uppercase tracking-tighter text-white leading-none">
-          PRICING<br/>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-200" style={{ WebkitTextStroke: '1px rgba(234,179,8,0.2)' }}>PLANS</span>
+          SYSTEM<br/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-200" style={{ WebkitTextStroke: '1px rgba(234,179,8,0.2)' }}>ACCESS</span>
         </h2>
         <p className="text-[10px] sm:text-[14px] text-muted text-center max-w-2xl mx-auto uppercase tracking-[0.2em] sm:tracking-[0.3em] leading-relaxed font-medium px-4">
-          CHOOSE THE BEST PLAN FOR YOUR TRADING JOURNEY.
+          DEPLOY YOUR TRADING LEGACY WITH THE WORLD'S MOST ADVANCED BINARY NODES.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10">
-        {subscriptionPlans.map((plan, i) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10">
+        {plansToDisplay.map((plan, i) => {
           const variants = plan.variants || [];
           const selectedVariantId = selectedVariants[plan.id] || (variants.length > 0 ? variants[0].id : null);
           const currentVariant = variants.find(v => v.id === selectedVariantId);
