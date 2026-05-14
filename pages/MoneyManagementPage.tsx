@@ -783,7 +783,7 @@ const MoneyManagementPage: React.FC = () => {
                   }`}
                   style={{ clipPath: 'polygon(12% 0, 100% 0, 100% 65%, 88% 100%, 0 100%, 0 35%)' }}
                 >
-                  CREATE_SESSION
+                  START_REAL_SESSION
                   <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -796,107 +796,28 @@ const MoneyManagementPage: React.FC = () => {
                     <span className="text-[9px] sm:text-[10px] font-heading font-black text-white uppercase tracking-[0.4em]">PROJECTION_ANALYSIS</span>
                   </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                    {/* Max Loss Buffer */}
-                    <div className="space-y-2 sm:space-y-3 group">
-                      <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-hover:text-accent transition-colors">
-                        ALLOWED_LOSSES
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/[0.02] transition-all duration-500"></div>
-                        <div 
-                          className="w-full bg-white/[0.02] border border-white/10 p-4 flex items-center justify-between transition-all group-hover:border-accent/50"
-                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                        >
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-[11px] font-heading text-error uppercase font-bold">{(Number(totalEvents) - Number(expectedWins)).toLocaleString('en-US')}</span>
-                          </div>
-                          <ShieldAlert className="text-muted/20 group-hover:text-accent transition-colors" size={14} />
+                  <div className="space-y-4">
+                    {[
+                      { label: 'ALLOWED_LOSSES', val: (Number(totalEvents) - Number(expectedWins)).toLocaleString('en-US'), icon: <ShieldAlert size={14} />, color: 'text-error' },
+                      { label: 'FIRST_TRADE', val: `$${calculateBetAmount(Number(capital), Number(totalEvents), Number(expectedWins), Number(odds), previewV).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <Zap size={14}/>, color: 'text-white' },
+                      { label: 'TOTAL_PROFIT', val: `+$${(previewProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <TrendingUp size={14}/>, color: 'text-emerald-500' },
+                      { label: 'TOTAL_ROI', val: `${(previewROI || 0).toFixed(2)}%`, icon: <Percent size={14}/>, color: 'text-accent' },
+                      { label: 'BREAK_EVEN_%', val: `${((1 / Number(odds)) * 100).toFixed(2)}%`, icon: <Activity size={14} />, color: 'text-white' }
+                    ].map((item, j) => (
+                      <div key={j} className="flex items-center justify-between p-4 bg-black/40 border border-white/5">
+                        <div className="flex items-center gap-3">
+                          <div className="text-muted/40">{item.icon}</div>
+                          <span className="text-[9px] font-heading text-muted uppercase tracking-widest">{item.label}</span>
                         </div>
-                        <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-hover:border-accent transition-colors"></div>
+                        <span className={`text-[11px] font-heading font-black ${item.color}`}>{item.val}</span>
                       </div>
-                    </div>
+                    ))}
+                  </div>
 
-                    {/* Initial Entry Load */}
-                    <div className="space-y-2 sm:space-y-3 group">
-                      <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-hover:text-accent transition-colors">
-                        FIRST_TRADE
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/[0.02] transition-all duration-500"></div>
-                        <div 
-                          className="w-full bg-white/[0.02] border border-white/10 p-4 flex items-center justify-between transition-all group-hover:border-accent/50"
-                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                        >
-                          <span className="text-[11px] font-heading text-white uppercase font-bold">
-                            ${calculateBetAmount(Number(capital), Number(totalEvents), Number(expectedWins), Number(odds), previewV).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
-                          <Zap className="text-muted/20 group-hover:text-accent transition-colors" size={14} />
-                        </div>
-                        <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-hover:border-accent transition-colors"></div>
-                      </div>
-                    </div>
-
-                    {/* Net Profit Potential */}
-                    <div className="space-y-2 sm:space-y-3 group">
-                      <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-hover:text-accent transition-colors">
-                        TOTAL_PROFIT
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/[0.02] transition-all duration-500"></div>
-                        <div 
-                          className="w-full bg-white/[0.02] border border-white/10 p-4 flex items-center justify-between transition-all group-hover:border-accent/50"
-                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                        >
-                          <span className="text-[11px] font-heading text-emerald-500 uppercase font-bold">
-                            +${(previewProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
-                          <TrendingUp className="text-muted/20 group-hover:text-emerald-500 transition-colors" size={14} />
-                        </div>
-                        <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-hover:border-accent transition-colors"></div>
-                      </div>
-                    </div>
-
-                    {/* ROI Yield */}
-                    <div className="space-y-2 sm:space-y-3 group">
-                      <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-hover:text-accent transition-colors">
-                        TOTAL_ROI
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/[0.02] transition-all duration-500"></div>
-                        <div 
-                          className="w-full bg-white/[0.02] border border-white/10 p-4 flex items-center justify-between transition-all group-hover:border-accent/50"
-                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                        >
-                          <span className="text-[11px] font-heading text-accent uppercase font-bold">
-                            {(previewROI || 0).toFixed(2)}%
-                          </span>
-                          <Percent className="text-muted/20 group-hover:text-accent transition-colors" size={14} />
-                        </div>
-                        <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-hover:border-accent transition-colors"></div>
-                      </div>
-                    </div>
-
-                     {/* Break Even Rate */}
-                     <div className="space-y-2 sm:space-y-3 group">
-                      <label className="flex items-center gap-2 text-[8px] font-heading text-muted/40 uppercase tracking-[0.4em] pl-1 group-hover:text-accent transition-colors">
-                        BREAK_EVEN_%
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/[0.02] transition-all duration-500"></div>
-                        <div 
-                          className="w-full bg-white/[0.02] border border-white/10 p-4 flex items-center justify-between transition-all group-hover:border-accent/50"
-                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
-                        >
-                          <span className="text-[11px] font-heading text-white uppercase font-bold">
-                            {((1 / Number(odds)) * 100).toFixed(2)}%
-                          </span>
-                          <Activity className="text-muted/20 group-hover:text-accent transition-colors" size={14} />
-                        </div>
-                        <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20 group-hover:border-accent transition-colors"></div>
-                      </div>
-                    </div>
-
+                  <div className="p-4 bg-accent/5 border border-accent/10">
+                    <p className="text-[8px] font-heading text-accent uppercase tracking-widest leading-relaxed">
+                      SYSTEM_ANALYSIS_COMPLETE. MATHEMATICAL_MODELS_VERIFIED.
+                    </p>
                   </div>
                 </div>
               </div>
