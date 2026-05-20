@@ -488,7 +488,7 @@ const MoneyManagementDemo: React.FC = () => {
             
             <div className="flex flex-col gap-4">
                <button 
-                 onClick={() => window.location.hash = '#/register'}
+                 onClick={() => window.location.hash = '#/contact'}
                  className="w-full py-5 bg-accent text-black font-heading text-[10px] font-black tracking-[0.5em] uppercase hover:shadow-glow transition-all active:scale-95 flex items-center justify-center gap-3"
                  style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
                >
